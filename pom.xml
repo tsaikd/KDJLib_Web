@@ -2,44 +2,56 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.tsaikd.java</groupId>
 	<artifactId>KDJLib_Web</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
+	<repositories>
+		<repository>
+			<id>morphia.googlecode.com</id>
+			<name>Morphia Repo at Google Code</name>
+			<url>http://morphia.googlecode.com/svn/mavenrepo</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.tsaikd.java</groupId>
 			<artifactId>KDJLib</artifactId>
-			<version>0.0.1</version>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
-			<version>r2079</version>
+			<version>r1918</version>
 		</dependency>
 		<dependency>
 			<groupId>com.yahoo.platform.yui</groupId>
 			<artifactId>yuicompressor</artifactId>
-			<version>2.4.7</version>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.htmlcompressor</groupId>
 			<artifactId>htmlcompressor</artifactId>
-			<version>1.5.2</version>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-servlet-api</artifactId>
-			<version>7.0.29</version>
+			<version>LATEST</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-jsp-api</artifactId>
-			<version>7.0.29</version>
+			<version>LATEST</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.morphia</groupId>
+			<artifactId>morphia</artifactId>
+			<version>LATEST</version>
 		</dependency>
 	</dependencies>
 </project>
