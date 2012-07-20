@@ -1,0 +1,166 @@
+package org.tsaikd.java.utils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.googlecode.htmlcompressor.compressor.ClosureJavaScriptCompressor;
+import com.googlecode.htmlcompressor.compressor.YuiCssCompressor;
+
+public class HtmlCompressor {
+
+	private static Logger log = Logger.getLogger(HtmlCompressor.class);
+	static String version = "6";
+	private static ClosureJavaScriptCompressor jsCompressor = new ClosureJavaScriptCompressor();
+	private static YuiCssCompressor cssCompressor = new YuiCssCompressor();
+
+	public enum ConfType {
+		Javascript,
+		CSS
+	}
+
+	public static void compress(String dstFile, List<String> srcFiles, ConfType type) throws Exception {
+		OutputStream os = new FileOutputStream(dstFile);
+		StringBuilder sb = new StringBuilder();
+
+		for (String jsFile : srcFiles) {
+			File file = new File(jsFile);
+			if (!file.isFile()) {
+				log.warn("skip file: " + jsFile);
+				continue;
+			}
+			log.debug("loading " + jsFile + " ...");
+			sb.append(FileUtils.readFileToString(file, "UTF-8"));
+		}
+
+		if (sb.length() > 0) {
+			String comp = null;
+			if (type == ConfType.CSS) {
+				log.debug("compressing CSS ...");
+				comp = cssCompressor.compress(sb.toString());
+			} else {
+				log.debug("compressing Javascript ...");
+				comp = jsCompressor.compress(sb.toString());
+			}
+			if (comp != null) {
+				os.write(comp.getBytes());
+			}
+			os.close();
+			log.debug("compressed to " + dstFile);
+		}
+	}
+
+	public static void compressFromXml(String xmlConfig) throws Exception {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		Document doc = db.parse(new File(xmlConfig));
+		doc.getDocumentElement().normalize();
+		NodeList nodeList = doc.getElementsByTagName("compress");
+
+		for (int i=0 ; i<nodeList.getLength() ; i++) {
+			Node node = nodeList.item(i);
+			if (node.getNodeName() == "compress") {
+				ConfCompress conf = new ConfCompress();
+				parseXmlCompress(conf, node);
+				if (conf.isValid()) {
+					compress(conf.outputFile, conf.inputFiles, conf.type);
+				}
+			}
+		}
+	}
+
+	private static class ConfCompress {
+		public ConfType type = ConfType.Javascript;
+		public String outputFile = null;
+		public List<String> inputFiles = new ArrayList<String>();
+		public boolean isValid() {
+			if (outputFile == null)
+				return false;
+			if (inputFiles.size() < 1)
+				return false;
+			return true;
+		}
+	}
+
+	private static void parseXmlCompress(ConfCompress conf, Node node) throws Exception {
+		NodeList nodeList = node.getChildNodes();
+		for (int i=0 ; i<nodeList.getLength() ; i++) {
+			Node child = nodeList.item(i);
+			if (child.getNodeName() == "type") {
+				parseXmlType(conf, child);
+			} else if (child.getNodeName() == "outputFile") {
+				parseXmlOutputFile(conf, child);
+			} else if (child.getNodeName() == "inputList") {
+				parseXmlInputList(conf, child);
+			}
+		}
+	}
+
+	private static void parseXmlType(ConfCompress conf, Node node) throws Exception {
+		NodeList nodeList = node.getChildNodes();
+		for (int i=0 ; i<nodeList.getLength() ; i++) {
+			Node child = nodeList.item(i);
+			String value = getNodeValue(child);
+			if (value != null) {
+				if (value.equalsIgnoreCase("css")) {
+					conf.type = ConfType.CSS;
+				}
+			}
+		}
+	}
+
+	private static void parseXmlOutputFile(ConfCompress conf, Node node) throws Exception {
+		NodeList nodeList = node.getChildNodes();
+		for (int i=0 ; i<nodeList.getLength() ; i++) {
+			Node child = nodeList.item(i);
+			String value = getNodeValue(child);
+			if (value != null) {
+				conf.outputFile = value;
+			}
+		}
+	}
+
+	private static void parseXmlInputList(ConfCompress conf, Node node) throws Exception {
+		NodeList nodeList = node.getChildNodes();
+		for (int i=0 ; i<nodeList.getLength() ; i++) {
+			Node child = nodeList.item(i);
+			if (child.getNodeName() == "inputFile") {
+				parseXmlInputFile(conf, child);
+			}
+		}
+	}
+
+	private static void parseXmlInputFile(ConfCompress conf, Node node) throws Exception {
+		NodeList nodeList = node.getChildNodes();
+		for (int i=0 ; i<nodeList.getLength() ; i++) {
+			Node child = nodeList.item(i);
+			String value = getNodeValue(child);
+			if (value != null) {
+				conf.inputFiles.add(value);
+			}
+		}
+	}
+
+	private static String getNodeValue(Node node) throws Exception {
+		String value = node.getNodeValue();
+		if (value != null) {
+			value = value.trim();
+			if (value.isEmpty()) {
+				value = null;
+			}
+		}
+		return value;
+	}
+
+}
