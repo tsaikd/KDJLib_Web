@@ -268,7 +268,7 @@ public class MappedField {
 
 	private void setObject(Object obj, Object value) throws MongoException {
 		try {
-			if (value == null && (isList || isMongoObject)) {
+			if (value == null && isList) {
 				field.set(obj, newInstance());
 			} else if (value == null && isNativeType) {
 				field.set(obj, defValue);

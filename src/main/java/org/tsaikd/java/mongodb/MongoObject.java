@@ -1,5 +1,7 @@
 package org.tsaikd.java.mongodb;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,7 +40,7 @@ public class MongoObject {
 		}
 	}
 
-	public static <T> T findOne(Class<T> clazz, DBObject o, DBObject fields) throws MongoException {
+	public static <T extends MongoObject> T findOne(Class<T> clazz, DBObject o, DBObject fields) throws MongoException {
 		MappedClass mc = MappedClass.getMappedClass(clazz);
 		DBObject dbobj = mc.getCol().findOne(o, fields);
 		if (dbobj == null) {
@@ -51,12 +53,11 @@ public class MongoObject {
 		return findOne(getClass(), o, fields);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T fromObject(Class<T> clazz, Object obj) throws MongoException {
+	public static <T extends MongoObject> T fromObject(Class<T> clazz, Object obj) throws MongoException {
 		try {
-			MongoObject ret = (MongoObject) clazz.newInstance();
+			T ret = clazz.newInstance();
 			ret.fromObject(obj);
-			return (T) ret;
+			return ret;
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new MongoException(e.getMessage(), e);
 		}
@@ -154,10 +155,10 @@ public class MongoObject {
 
 	public boolean isRef = false;
 
-	public void fetch() {
+	public MongoObject fetch() {
 		if (!isRef) {
 			log.error("Cannot fetch non-reference object: " + this);
-			return;
+			return this;
 		}
 		if (!isFetched) {
 			DBRef dbref = toDBRef();
@@ -165,6 +166,32 @@ public class MongoObject {
 			fromDBObject(dbobj);
 			isFetched = true;
 		}
+		return this;
+	}
+
+	public MongoObject fetchAll() {
+		MappedClass mc = getMappedClass();
+		for (MappedField field : mc.persistenceFields.values()) {
+			if (field.isReference && field.isMongoObject) {
+				if (field.isList) {
+					@SuppressWarnings("unchecked")
+					List<MongoObject> list = (List<MongoObject>) field.get(this);
+					if (list == null || list.isEmpty()) {
+						continue;
+					}
+					for (MongoObject mobj : list) {
+						mobj.fetch();
+					}
+				} else {
+					MongoObject mobj = field.getMongoObject(this);
+					if (mobj == null) {
+						continue;
+					}
+					mobj.fetch();
+				}
+			}
+		}
+		return this;
 	}
 
 	public MongoObject clone() {

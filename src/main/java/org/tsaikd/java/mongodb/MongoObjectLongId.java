@@ -16,7 +16,7 @@ public class MongoObjectLongId extends MongoObject {
 	@Id
 	public long id;
 
-	public static <T> T findOne(Class<T> clazz, long id) throws MongoException {
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id) throws MongoException {
 		return findOne(clazz, new BasicDBObject("_id", id), null);
 	}
 
