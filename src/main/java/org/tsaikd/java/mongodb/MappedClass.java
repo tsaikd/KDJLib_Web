@@ -24,9 +24,11 @@ public class MappedClass {
 
 	public static DB db = null;
 
-	private static HashMap<Class<?>, MappedClass> mappedClasses = new HashMap<Class<?>, MappedClass>();
+	public static ArrayList<String> searchPackage = new ArrayList<>();
 
-	private static HashMap<String, MappedClass> mappedClasses2 = new HashMap<String, MappedClass>();
+	private static HashMap<Class<?>, MappedClass> mappedClasses = new HashMap<>();
+
+	private static HashMap<String, MappedClass> mappedClasses2 = new HashMap<>();
 
 	public static MappedClass getMappedClass(Class<?> clazz) {
 		if (mappedClasses.containsKey(clazz)) {
@@ -49,9 +51,28 @@ public class MappedClass {
 		return mappedClasses.containsKey(clazz);
 	}
 
+	private static Class<?> searchClass(String name) {
+		try {
+			return Class.forName(name);
+		} catch (ClassNotFoundException e) {
+		}
+		for (String basePkg : searchPackage) {
+			try {
+				return Class.forName(basePkg + "." + name);
+			} catch (ClassNotFoundException e) {
+			}
+		}
+		return null;
+	}
+
 	public static Object newInstance(String name) throws MongoException {
 		if (!mappedClasses2.containsKey(name)) {
-			return null;
+			Class<?> clazz = searchClass(name);
+			if (clazz == null) {
+				return null;
+			} else {
+				getMappedClass(clazz);
+			}
 		}
 		try {
 			return mappedClasses2.get(name).clazz.newInstance();
