@@ -211,12 +211,19 @@ public class MongoObject {
 		return MongoObject.fromObject(getClass(), toDBObject(false));
 	}
 
-	public void save() {
+	public MongoObject save() {
 		DBCollection col = getCol();
 		col.save(toDBObject(false));
+		return this;
 	}
 
-	public void setField(String... fields) {
+	public MongoObject insert() throws MongoException {
+		getCol().insert(toDBObject(false));
+		getDB().getLastError().throwOnError();
+		return this;
+	}
+
+	public MongoObject setField(String... fields) {
 		MappedClass mc = getMappedClass();
 		if (mc.idField == null) {
 			throw new MongoException("Cannot setField without Id annotation: " + fields);
@@ -234,6 +241,7 @@ public class MongoObject {
 
 		DBCollection col = getCol();
 		col.update(new BasicDBObject("_id", getIdDBValue()), new BasicDBObject("$set", update));
+		return this;
 	}
 
 }

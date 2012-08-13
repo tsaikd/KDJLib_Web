@@ -47,6 +47,18 @@ public class MappedClass {
 		return mappedClass;
 	}
 
+	public static MappedClass getMappedClass(String name) throws MongoException {
+		if (!mappedClasses2.containsKey(name)) {
+			Class<?> clazz = searchClass(name);
+			if (clazz == null) {
+				return null;
+			} else {
+				return getMappedClass(clazz);
+			}
+		}
+		return mappedClasses2.get(name);
+	}
+
 	public static boolean isMappedClass(Class<?> clazz) {
 		return mappedClasses.containsKey(clazz);
 	}
@@ -63,22 +75,6 @@ public class MappedClass {
 			}
 		}
 		return null;
-	}
-
-	public static Object newInstance(String name) throws MongoException {
-		if (!mappedClasses2.containsKey(name)) {
-			Class<?> clazz = searchClass(name);
-			if (clazz == null) {
-				return null;
-			} else {
-				getMappedClass(clazz);
-			}
-		}
-		try {
-			return mappedClasses2.get(name).clazz.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new MongoException(e.getMessage(), e);
-		}
 	}
 
 	private static ArrayList<MappedField> getDeclaredAndInheritedFields(Class<?> clazz) {
@@ -168,6 +164,18 @@ public class MappedClass {
 
 	public DBCollection getCol() {
 		return db.getCollection(getEntityName());
+	}
+
+	public Object newInstance() throws MongoException {
+		try {
+			return clazz.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new MongoException(e.getMessage(), e);
+		}
+	}
+
+	public static Object newInstance(String name) throws MongoException {
+		return getMappedClass(name).newInstance();
 	}
 
 }

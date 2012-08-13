@@ -26,8 +26,10 @@ public class MappedField {
 
 	public boolean isId = false;
 
+	// int, long, double, boolean
 	public boolean isNativeType = false;
 
+	// Integer, Long, Double, Boolean, String
 	public boolean isNativeClass = false;
 
 	public boolean isEnum = false;
@@ -92,22 +94,18 @@ public class MappedField {
 				throw new MongoException("Unsupport interface: " + typename);
 			}
 		} else {
-			Object newobj = defValue = newInstance();
-			if (newobj instanceof MongoObject) {
-				isMongoObject = true;
-			}
-			if (newobj instanceof BasicDBList) {
+			isMongoObject = MongoObject.class.isAssignableFrom(type);
+			if (BasicDBList.class.isAssignableFrom(type)) {
 				isList = true;
 				isBasicDBList = true;
-			} else if (newobj instanceof List<?>) {
+			} else if (List.class.isAssignableFrom(type)) {
 				isList = true;
 			}
 		}
 		if (isList && !isBasicDBList) {
-			Object newarg = newInstanceListType();
-			if (newarg instanceof MongoObject) {
-				isMongoObject = true;
-			}
+			ParameterizedType pt = (ParameterizedType) field.getGenericType();
+			Type typearg = pt.getActualTypeArguments()[0];
+			isMongoObject = MongoObject.class.isAssignableFrom((Class<?>) typearg);
 		}
 		field.setAccessible(true);
 
@@ -281,7 +279,12 @@ public class MappedField {
 	}
 
 	public void setEmpty(Object obj) {
-		setObject(obj, null);
+		if (isMongoObject && !isList && !isReference) {
+			MongoObject newobj = (MongoObject) newInstance();
+			setObject(obj, newobj);
+		} else {
+			setObject(obj, null);
+		}
 	}
 
 	public void set(Object obj, DBRef value) {
