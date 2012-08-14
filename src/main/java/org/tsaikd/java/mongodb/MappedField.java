@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.tsaikd.java.mongodb.annotations.DefValue;
 import org.tsaikd.java.mongodb.annotations.Id;
 import org.tsaikd.java.mongodb.annotations.Reference;
 
@@ -59,25 +60,60 @@ public class MappedField {
 		String typename = type.getName();
 		if (typename.equals("int")) {
 			isNativeType = true;
-			defValue = (int) 0;
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = (int) 0;
+			} else {
+				defValue = decDefValue.valueInt();
+			}
 		} else if (typename.equals("long")) {
 			isNativeType = true;
-			defValue = (long) 0;
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = (long) 0;
+			} else {
+				defValue = decDefValue.valueLong();
+			}
 		} else if (typename.equals("double")) {
 			isNativeType = true;
-			defValue = (double) 0;
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = (double) 0;
+			} else {
+				defValue = decDefValue.valueDouble();
+			}
 		} else if (typename.equals("java.lang.Integer")) {
 			isNativeClass = true;
-			defValue = new Integer(0);
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = new Integer(0);
+			} else {
+				defValue = decDefValue.valueInt();
+			}
 		} else if (typename.equals("java.lang.Long")) {
 			isNativeClass = true;
-			defValue = new Long(0);
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = new Long(0);
+			} else {
+				defValue = decDefValue.valueLong();
+			}
 		} else if (typename.equals("java.lang.Double")) {
 			isNativeClass = true;
-			defValue = new Double(0);
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = new Double(0);
+			} else {
+				defValue = decDefValue.valueDouble();
+			}
 		} else if (typename.equals("java.lang.Boolean")) {
 			isNativeClass = true;
-			defValue = false;
+			DefValue decDefValue = field.getAnnotation(DefValue.class);
+			if (decDefValue == null) {
+				defValue = false;
+			} else {
+				defValue = decDefValue.valueBoolean();
+			}
 		} else if (typename.equals("java.lang.String")) {
 			isNativeClass = true;
 			defValue = "";
