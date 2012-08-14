@@ -234,18 +234,30 @@ public class MongoObject {
 			throw new MongoException("Cannot setField without Id annotation: " + fields);
 		}
 
-		BasicDBObject update = new BasicDBObject();
+		BasicDBObject set = new BasicDBObject();
+		BasicDBObject unset = new BasicDBObject();
 		for (String field : fields) {
 			MappedField mf = mc.persistenceFields.get(field);
 			if (mf == null) {
 				throw new MongoException("Invalid field: " + field);
 			}
 			Object value = mf.getDBValue(this, false, false);
-			update.put(field, value);
+			if (value == null) {
+				unset.put(field, 1);
+			} else {
+				set.put(field, value);
+			}
 		}
 
 		DBCollection col = getCol();
-		col.update(new BasicDBObject("_id", getIdDBValue()), new BasicDBObject("$set", update));
+		BasicDBObject update = new BasicDBObject();
+		if (!unset.isEmpty()) {
+			update.put("$unset", unset);
+		}
+		if (!set.isEmpty()) {
+			update.put("$set", set);
+		}
+		col.update(new BasicDBObject("_id", getIdDBValue()), update);
 		return this;
 	}
 
