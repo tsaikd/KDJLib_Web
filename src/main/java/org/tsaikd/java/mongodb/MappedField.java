@@ -183,7 +183,7 @@ public class MappedField {
 		}
 	}
 
-	public DBObject getDBObject(Object obj, boolean extendRef) {
+	public DBObject getDBObject(Object obj, boolean extendRef, boolean originIdField) {
 		if (isDBObject) {
 			return (DBObject) getObject(obj);
 		}
@@ -191,11 +191,11 @@ public class MappedField {
 		if (value == null) {
 			return null;
 		} else {
-			return value.toDBObject(extendRef);
+			return value.toDBObject(extendRef, originIdField);
 		}
 	}
 
-	public BasicDBList getDBList(Object obj, boolean extendRef) {
+	public BasicDBList getDBList(Object obj, boolean extendRef, boolean originIdField) {
 		if (!isList) {
 			log.error("Cannot getDBList with invalid type");
 			return null;
@@ -206,12 +206,12 @@ public class MappedField {
 			if (isReference) {
 				MongoObject value = (MongoObject) forobj;
 				if (extendRef && value.isFetched) {
-					ret.add(value.toDBObject(extendRef));
+					ret.add(value.toDBObject(extendRef, originIdField));
 				} else {
 					ret.add(value.toDBRef());
 				}
 			} else if (isMongoObject) {
-				ret.add(((MongoObject) forobj).toDBObject(extendRef));
+				ret.add(((MongoObject) forobj).toDBObject(extendRef, originIdField));
 			} else {
 				ret.add(forobj);
 			}
@@ -223,9 +223,9 @@ public class MappedField {
 		}
 	}
 
-	public Object getDBValue(Object obj, boolean extendRef) {
+	public Object getDBValue(Object obj, boolean extendRef, boolean originIdField) {
 		if (isList) {
-			return getDBList(obj, extendRef);
+			return getDBList(obj, extendRef, originIdField);
 		}
 
 		Object value = getObject(obj);
@@ -250,7 +250,7 @@ public class MappedField {
 					return mobj.toDBRef();
 				}
 			}
-			BasicDBObject ret = mobj.toDBObject(extendRef);
+			BasicDBObject ret = mobj.toDBObject(extendRef, originIdField);
 			if (ret.isEmpty()) {
 				return null;
 			}

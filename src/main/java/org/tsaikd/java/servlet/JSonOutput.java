@@ -13,7 +13,7 @@ public class JSonOutput extends MongoObject {
 
 	public void write(ServletResponse res) throws IOException {
 		PrintWriter out = res.getWriter();
-		out.write(toString());
+		out.write(toDBObject(true, true).toString());
 		out.close();
 	}
 
