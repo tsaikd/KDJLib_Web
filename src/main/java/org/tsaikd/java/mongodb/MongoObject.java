@@ -14,6 +14,7 @@ import com.mongodb.DBRef;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
 import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 
 public class MongoObject {
 
@@ -67,6 +68,11 @@ public class MongoObject {
 			return null;
 		}
 		return fromObject(clazz, dbobj);
+	}
+
+	public static <T extends MongoObject> WriteResult remove(Class<T> clazz, DBObject o) throws MongoException {
+		MappedClass mc = MappedClass.getMappedClass(clazz);
+		return mc.getCol().remove(o);
 	}
 
 	public static <T extends MongoObject> T fromObject(Class<T> clazz, Object obj) throws MongoException {

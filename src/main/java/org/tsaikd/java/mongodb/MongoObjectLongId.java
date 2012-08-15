@@ -8,6 +8,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 
 public class MongoObjectLongId extends MongoObject {
 
@@ -26,6 +27,10 @@ public class MongoObjectLongId extends MongoObject {
 			fieldobj.put(field, 1);
 		}
 		return findOne(clazz, new BasicDBObject("_id", id), fieldobj);
+	}
+
+	public static <T extends MongoObjectLongId> WriteResult remove(Class<T> clazz, long id) throws MongoException {
+		return remove(clazz, new BasicDBObject("_id", id));
 	}
 
 	/**
