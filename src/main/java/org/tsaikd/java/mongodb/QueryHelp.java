@@ -31,7 +31,40 @@ public class QueryHelp extends BasicDBObject {
 		return this;
 	}
 
-	private QueryHelp wrapList(String key) {
+	public QueryHelp filterAddToSet(String key, Object value) {
+		return filter("$addToSet", new QueryHelp(key, value));
+	}
+
+	public QueryHelp filterNe(String key, Object value) {
+		return filter(key, new QueryHelp("$ne", value));
+	}
+
+	public QueryHelp filterPull(String key, Object value) {
+		return filter("$pull", new QueryHelp(key, value));
+	}
+
+	public QueryHelp filterSet(String key, Object value) {
+		return filter("$set", new QueryHelp(key, value));
+	}
+
+	public QueryHelp filterUnset(String key, Object value) {
+		return filter("$unset", new QueryHelp(key, value));
+	}
+
+	public QueryHelp wrapObject(String key) {
+		if (isEmpty()) {
+			return this;
+		}
+		QueryHelp qobj = new QueryHelp();
+		for (java.util.Map.Entry<String, Object> entry : entrySet()) {
+			qobj.append(entry.getKey(), entry.getValue());
+		}
+		clear();
+		append(key, qobj);
+		return this;
+	}
+
+	public QueryHelp wrapList(String key) {
 		if (size() < 2) {
 			return this;
 		}
