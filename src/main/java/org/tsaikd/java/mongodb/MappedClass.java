@@ -6,11 +6,13 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.tsaikd.java.mongodb.annotations.Entity;
 import org.tsaikd.java.mongodb.annotations.IndexEntity;
+import org.tsaikd.java.mongodb.annotations.IndexField;
 import org.tsaikd.java.mongodb.annotations.Transient;
 
 import com.mongodb.BasicDBObject;
@@ -39,9 +41,15 @@ public class MappedClass {
 		mappedClasses2.put(mappedClass.getEntityName(), mappedClass);
 		if (db != null) {
 			DBCollection col = mappedClass.getCol();
-			for (BasicDBObject field : mappedClass.indexFields) {
-				log.debug("ensureIndex " + mappedClass.getEntityName() + ": " + field);
-				col.ensureIndex(field);
+			for (Entry<BasicDBObject, BasicDBObject> field : mappedClass.indexFields.entrySet()) {
+				if (log.isDebugEnabled()) {
+					if (field.getValue().isEmpty()) {
+						log.debug("ensureIndex " + mappedClass.getEntityName() + ": " + field.getKey());
+					} else {
+						log.debug("ensureIndex " + mappedClass.getEntityName() + ": " + field.getKey() + ", " + field.getValue());
+					}
+				}
+				col.ensureIndex(field.getKey(), field.getValue());
 			}
 		}
 		return mappedClass;
@@ -100,11 +108,12 @@ public class MappedClass {
 		return fields;
 	}
 
-	public LinkedHashMap<String, MappedField> persistenceFields = new LinkedHashMap<String, MappedField>();
+	public LinkedHashMap<String, MappedField> persistenceFields = new LinkedHashMap<>();
 
 	public MappedField idField;
 
-	public ArrayList<BasicDBObject> indexFields = new ArrayList<BasicDBObject>();
+	// field, option
+	public LinkedHashMap<BasicDBObject, BasicDBObject> indexFields = new LinkedHashMap<>();
 
 	private Class<?> clazz;
 
@@ -112,15 +121,19 @@ public class MappedClass {
 		this.clazz = clazz;
 		IndexEntity annoIndex = getAnnotation(IndexEntity.class);
 		if (annoIndex != null) {
-			for (String name : annoIndex.names()) {
-				int dir = 1;
-				name = name.trim();
-				if (name.startsWith("-")) {
-					dir = -1;
-					name = name.substring(1).trim();
+			for (IndexField indexField : annoIndex.fields()) {
+				BasicDBObject fieldobj = new BasicDBObject(indexField.name(), indexField.direction());
+				BasicDBObject optionobj = new BasicDBObject();
+				if (indexField.option().unique()) {
+					optionobj.put("unique", true);
 				}
-				BasicDBObject indexField = new BasicDBObject(name, dir);
-				indexFields.add(indexField);
+				if (indexField.option().sparse()) {
+					optionobj.put("sparse", true);
+				}
+				if (indexField.option().dropDups()) {
+					optionobj.put("dropDups", true);
+				}
+				indexFields.put(fieldobj, optionobj);
 			}
 		}
 		ArrayList<MappedField> fields = getDeclaredAndInheritedFields(clazz);

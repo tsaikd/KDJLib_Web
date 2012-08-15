@@ -6,9 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface IndexEntity {
+@Target({ElementType.PARAMETER})
+public @interface IndexFieldOption {
 
-	public IndexField[] fields() default {};
+	public boolean dropDups() default false;
+
+	public boolean sparse() default false;
+
+	public boolean unique() default false;
 
 }
