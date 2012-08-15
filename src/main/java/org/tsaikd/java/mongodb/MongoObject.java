@@ -6,10 +6,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.MapReduceOutput;
 import com.mongodb.MongoException;
 
 public class MongoObject {
@@ -106,7 +109,14 @@ public class MongoObject {
 			field.set(this, dbobj.get(key));
 		}
 		if (mc.idField != null) {
-			mc.idField.set(this, dbobj.get("_id"));
+			Object idValue = dbobj.get("_id");
+			if (idValue == null) {
+				idValue = dbobj.get("$id");
+				if (idValue != null) {
+					isRef = true;
+				}
+			}
+			mc.idField.set(this, idValue);
 		}
 		return this;
 	}
@@ -153,7 +163,7 @@ public class MongoObject {
 	}
 
 	public DBRef toDBRef() {
-		return new DBRef(getDB(), getEntityName(), getId());
+		return new DBRef(getDB(), getEntityName(), getIdDBValue());
 	}
 
 	public boolean isEmpty() {
@@ -259,6 +269,15 @@ public class MongoObject {
 		}
 		col.update(new BasicDBObject("_id", getIdDBValue()), update);
 		return this;
+	}
+
+	public static CommandResult mapReduce(Class<? extends MongoObject> clazz, String map, String reduce, DBObject query) throws MongoException {
+		MappedClass mc = MappedClass.getMappedClass(clazz);
+		DBCollection col = mc.getCol();
+		MapReduceCommand mrcmd = new MapReduceCommand(col, map, reduce, null, MapReduceCommand.OutputType.INLINE, query);
+		MapReduceOutput mrout = col.mapReduce(mrcmd);
+		CommandResult res = mrout.getCommandResult();
+		return res;
 	}
 
 }
