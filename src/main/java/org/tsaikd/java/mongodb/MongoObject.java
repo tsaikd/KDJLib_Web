@@ -189,18 +189,22 @@ public class MongoObject {
 
 	public boolean isRef = false;
 
-	public MongoObject fetch() {
-		if (!isRef) {
-			log.error("Cannot fetch non-reference object: " + this);
-			return this;
+	public static <T extends MongoObject> T fetch(T mobj) {
+		if (!mobj.isRef) {
+			log.error("Cannot fetch non-reference object: " + mobj);
+			return mobj;
 		}
-		if (!isFetched) {
-			DBRef dbref = toDBRef();
+		if (!mobj.isFetched) {
+			DBRef dbref = mobj.toDBRef();
 			DBObject dbobj = dbref.fetch();
-			fromDBObject(dbobj);
-			isFetched = true;
+			mobj.fromDBObject(dbobj);
+			mobj.isFetched = true;
 		}
-		return this;
+		return mobj;
+	}
+
+	public MongoObject fetch() {
+		return fetch(this);
 	}
 
 	public MongoObject fetchAll() {
