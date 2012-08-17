@@ -2,10 +2,12 @@ package org.tsaikd.java.utils;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspWriter;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -13,7 +15,9 @@ public class ServletUtils {
 
 	static Log log = LogFactory.getLog(ServletUtils.class);
 
-	public static final int inlineBoundSize = 0; // 2048
+	public static final int inlineBoundSize = 2048;
+
+	public static boolean servletDebug = ConfigUtils.getBool("servlet.debug", false);
 
 	public static String getRemoteRealIP(HttpServletRequest req) {
 		String ip = req.getHeader("x-forwarded-for");
@@ -33,58 +37,84 @@ public class ServletUtils {
 		return new File(request.getServletContext().getRealPath(path));
 	}
 
-	public static boolean isFileExists(HttpServletRequest request, String path) {
-		return getRealFile(request, path).exists();
-	}
-
-	public static void outputFile(JspWriter out, File file) throws Exception {
-		FileReader fr = new FileReader(file);
-		char[] buffer = new char[8192];
-		int len;
-
-		while ((len = fr.read(buffer)) > 0) {
-			out.write(buffer, 0, len);
+	private static Object[] getIncludeFile(HttpServletRequest request, String path, String ext) throws IOException {
+		Object ret[] = new Object[2];
+		String fixPath;
+		if (path.endsWith("." + ext)) {
+			fixPath = path.substring(0, path.length() - ext.length() - 1);
+		} else {
+			fixPath = path;
 		}
+		if (fixPath.endsWith(".min")) {
+			fixPath = fixPath.substring(0, fixPath.length() - 4);
+		}
+
+		String testPath;
+		File file;
+		if (servletDebug) {
+			testPath = fixPath + "." + ext;
+			file = getRealFile(request, testPath);
+		} else {
+			testPath = fixPath + ".min." + ext;
+			file = getRealFile(request, testPath);
+			if (!file.exists()) {
+				testPath = fixPath + "." + ext;
+				file = getRealFile(request, testPath);
+			}
+		}
+		ret[0] = file;
+		ret[1] = testPath;
+		return ret;
 	}
 
-	public static void includeJs(JspWriter out, HttpServletRequest request, String path) throws Exception {
-		String relPath;
-		String p = request.getContextPath();
-		File file = getRealFile(request, path);
+	public static boolean isJsExists(HttpServletRequest request, String path) throws IOException {
+		Object[] objs = getIncludeFile(request, path, "js");
+		File file = (File) objs[0];
+		return file.exists();
+	}
+
+	public static void includeJs(JspWriter out, HttpServletRequest request, String path) throws IOException {
+		Object[] objs = getIncludeFile(request, path, "js");
+		File file = (File) objs[0];
+		String testPath = (String) objs[1];
 		if (file.exists()) {
-			if (file.length() < inlineBoundSize) {
+			if (!servletDebug && (file.length() < inlineBoundSize)) {
 				out.println("<script type=\"text/javascript\">");
-				outputFile(out, file);
+				IOUtils.copy(new FileReader(file), out);
 				out.println("</script>");
 				return;
 			}
-			relPath = p + path + "?" + file.lastModified();
+			testPath += "?" + file.lastModified();
 		} else {
 			log.warn("Include a non exists file: " + path);
-			relPath = p + path;
+			testPath = path;
 		}
-		String inc = "<script type=\"text/javascript\" src=\"" + relPath + "\"></script>";
-		out.println(inc);
+		out.println("<script type=\"text/javascript\" src=\"" + testPath + "\"></script>");
+	}
+
+	public static boolean isCssExists(HttpServletRequest request, String path) throws IOException {
+		Object[] objs = getIncludeFile(request, path, "css");
+		File file = (File) objs[0];
+		return file.exists();
 	}
 
 	public static void includeCss(JspWriter out, HttpServletRequest request, String path) throws Exception {
-		String relPath;
-		String p = request.getContextPath();
-		File file = getRealFile(request, path);
+		Object[] objs = getIncludeFile(request, path, "css");
+		File file = (File) objs[0];
+		String testPath = (String) objs[1];
 		if (file.exists()) {
-			if (file.length() < inlineBoundSize) {
+			if (!servletDebug && (file.length() < inlineBoundSize)) {
 				out.println("<style type=\"text/css\">");
-				outputFile(out, file);
+				IOUtils.copy(new FileReader(file), out);
 				out.println("</style>");
 				return;
 			}
-			relPath = p + path + "?" + file.lastModified();
+			testPath += "?" + file.lastModified();
 		} else {
 			log.warn("Include a non exists file: " + path);
-			relPath = p + path;
+			testPath = path;
 		}
-		String inc = "<link type=\"text/css\" rel=\"stylesheet\" href=\"" + relPath + "\"/>";
-		out.println(inc);
+		out.println("<link type=\"text/css\" rel=\"stylesheet\" href=\"" + testPath + "\"/>");
 	}
 
 }
