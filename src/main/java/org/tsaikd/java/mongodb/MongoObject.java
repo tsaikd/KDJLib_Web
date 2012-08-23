@@ -208,6 +208,9 @@ public class MongoObject {
 	}
 
 	public MongoObject fetchAll() {
+		if (isRef) {
+			fetch();
+		}
 		MappedClass mc = getMappedClass();
 		for (MappedField field : mc.persistenceFields.values()) {
 			if (field.isReference && field.isMongoObject) {
