@@ -3,7 +3,7 @@ package org.tsaikd.java.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import org.tsaikd.java.mongodb.MongoObject;
 
@@ -11,7 +11,10 @@ public class JSonOutput extends MongoObject {
 
 	public Integer status;
 
-	public void write(ServletResponse res) throws IOException {
+	public String msg;
+
+	public void write(HttpServletResponse res) throws IOException {
+		res.setContentType("application/json");
 		PrintWriter out = res.getWriter();
 		out.write(toDBObject(true, true).toString());
 		out.close();
