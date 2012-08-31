@@ -21,11 +21,26 @@ public class JSonOutput extends MongoObject {
 		}
 	}
 
-	public void write(HttpServletResponse res) throws IOException {
+	public void write(HttpServletResponse res, boolean sendError) throws IOException {
+		if (status != null) {
+			if (sendError) {
+				if (msg == null) {
+					res.sendError(status);
+				} else {
+					res.sendError(status, msg);
+				}
+			} else {
+				res.setStatus(status);
+			}
+		}
 		res.setContentType("application/json");
 		PrintWriter out = res.getWriter();
 		out.write(toDBObject(true, true).toString());
 		out.close();
+	}
+
+	public void write(HttpServletResponse res) throws IOException {
+		write(res, false);
 	}
 
 }
