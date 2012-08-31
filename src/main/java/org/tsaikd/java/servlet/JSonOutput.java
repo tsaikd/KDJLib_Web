@@ -13,6 +13,14 @@ public class JSonOutput extends MongoObject {
 
 	public String msg;
 
+	public void addMsg(String sMsg) {
+		if (msg == null) {
+			msg = sMsg;
+		} else {
+			msg += "<br/>" + sMsg;
+		}
+	}
+
 	public void write(HttpServletResponse res) throws IOException {
 		res.setContentType("application/json");
 		PrintWriter out = res.getWriter();
