@@ -20,11 +20,11 @@ public class MongoObject {
 
 	static Log log = LogFactory.getLog(MongoObject.class);
 
-	private static DB getDB() {
+	protected static DB getDB() {
 		return MappedClass.db;
 	}
 
-	private MappedClass getMappedClass() {
+	protected MappedClass getMappedClass() {
 		return MappedClass.getMappedClass(getClass());
 	}
 
