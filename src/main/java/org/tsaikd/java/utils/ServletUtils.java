@@ -37,7 +37,7 @@ public class ServletUtils {
 		return new File(request.getServletContext().getRealPath(path));
 	}
 
-	private static Object[] getIncludeFile(HttpServletRequest request, String path, String ext) throws IOException {
+	private static Object[] getIncludeFile(HttpServletRequest request, String path, String ext) {
 		Object ret[] = new Object[2];
 		String fixPath;
 		if (path.endsWith("." + ext)) {
@@ -67,7 +67,20 @@ public class ServletUtils {
 		return ret;
 	}
 
-	public static boolean isJsExists(HttpServletRequest request, String path) throws IOException {
+	public static String getIncludePath(HttpServletRequest request, String path, String ext) {
+		Object[] objs = getIncludeFile(request, path, "js");
+		File file = (File) objs[0];
+		String testPath = (String) objs[1];
+		if (file.exists()) {
+			testPath += "?" + file.lastModified();
+		} else {
+			log.warn("Include a non exists file: " + path);
+			testPath = path;
+		}
+		return testPath;
+	}
+
+	public static boolean isJsExists(HttpServletRequest request, String path) {
 		Object[] objs = getIncludeFile(request, path, "js");
 		File file = (File) objs[0];
 		return file.exists();
