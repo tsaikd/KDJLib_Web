@@ -6,7 +6,7 @@
 		<version>LATEST</version>
 	</parent>
 	<artifactId>KDJLib_Web</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<repositories>
 		<repository>
 			<id>morphia.googlecode.com</id>
@@ -23,6 +23,11 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<version>LATEST</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
 			<version>LATEST</version>
 		</dependency>
 		<dependency>
