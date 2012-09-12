@@ -47,8 +47,8 @@ public class QueryHelp extends BasicDBObject {
 		return filter("$set", new QueryHelp(key, value));
 	}
 
-	public QueryHelp filterUnset(String key, Object value) {
-		return filter("$unset", new QueryHelp(key, value));
+	public QueryHelp filterUnset(String key) {
+		return filter("$unset", new QueryHelp(key, 1));
 	}
 
 	public QueryHelp wrapObject(String key) {
