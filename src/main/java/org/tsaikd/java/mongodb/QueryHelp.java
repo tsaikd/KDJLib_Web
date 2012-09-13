@@ -32,7 +32,7 @@ public class QueryHelp extends BasicDBObject {
 	}
 
 	public QueryHelp filterAddToSet(String key, Object value) {
-		return filter("$addToSet", new QueryHelp(key, value));
+		return putBaseKeyValue("$addToSet", key, value);
 	}
 
 	public QueryHelp filterNe(String key, Object value) {
@@ -43,12 +43,21 @@ public class QueryHelp extends BasicDBObject {
 		return filter("$pull", new QueryHelp(key, value));
 	}
 
+	public QueryHelp putBaseKeyValue(String base, String key, Object value) {
+		if (containsField(base)) {
+			((QueryHelp) get(base)).put(key, value);
+		} else {
+			filter(base, new QueryHelp().put(key, value));
+		}
+		return this;
+	}
+
 	public QueryHelp filterSet(String key, Object value) {
-		return filter("$set", new QueryHelp(key, value));
+		return putBaseKeyValue("$set", key, value);
 	}
 
 	public QueryHelp filterUnset(String key) {
-		return filter("$unset", new QueryHelp(key, 1));
+		return putBaseKeyValue("$unset", key, 1);
 	}
 
 	public QueryHelp wrapObject(String key) {
@@ -79,6 +88,12 @@ public class QueryHelp extends BasicDBObject {
 
 	public QueryHelp wrapOr() {
 		return wrapList("$or");
+	}
+
+	@Override
+	public QueryHelp put(String key, Object value) {
+		super.put(key, value);
+		return this;
 	}
 
 }
