@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 public class QueryHelp extends BasicDBObject {
 
@@ -45,7 +46,28 @@ public class QueryHelp extends BasicDBObject {
 
 	public QueryHelp putBaseKeyValue(String base, String key, Object value) {
 		if (containsField(base)) {
-			((QueryHelp) get(base)).put(key, value);
+			QueryHelp baseObj = (QueryHelp) get(base);
+			if (baseObj.containsField(key)) {
+				Object baseKeyObj = baseObj.get(key);
+				if (baseKeyObj instanceof DBObject) {
+					DBObject eachKeyObj = (DBObject) baseKeyObj;
+					if (eachKeyObj.containsField("$each")) {
+						BasicDBList eachObj = (BasicDBList) eachKeyObj.get("$each");
+						eachObj.add(value);
+					} else {
+						baseObj.put(key, value);
+					}
+				} else if (base.equals("$addToSet")) {
+					BasicDBList eachObj = new BasicDBList();
+					eachObj.add(baseKeyObj);
+					eachObj.add(value);
+					baseObj.put(key, new QueryHelp().put("$each", eachObj));
+				} else {
+					baseObj.put(key, value);
+				}
+			} else {
+				baseObj.put(key, value);
+			}
 		} else {
 			filter(base, new QueryHelp().put(key, value));
 		}
