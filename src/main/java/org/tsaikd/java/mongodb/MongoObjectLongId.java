@@ -34,15 +34,14 @@ public class MongoObjectLongId extends MongoObject {
 	}
 
 	/**
-	 * 
 	 * @param clazz
 	 * @param base 1 or -1
-	 * @return
+	 * @return id
 	 * @throws MongoException
 	 */
-	protected static long nextId(Class<? extends MongoObjectLongId> clazz, long base) throws MongoException {
+	protected static long nextId(Class<? extends MongoObjectLongId> clazz, int base) throws MongoException {
 		MappedClass mc = MappedClass.getMappedClass(clazz);
-		long ret = base;
+		long ret = (base < 0) ? -1 : 1;
 		BasicDBObject sort = new BasicDBObject("_id", ((base < 0) ? 1 : -1));
 		long add = (base < 0) ? -1 : 1;
 		DBCursor cursor = mc.getCol().find(null, new BasicDBObject("_id", 1)).sort(sort).limit(1);
@@ -51,6 +50,29 @@ public class MongoObjectLongId extends MongoObject {
 			ret = (long) dbobj.get("_id") + add;
 		}
 		return ret;
+	}
+
+	public static <T extends MongoObjectLongId> boolean add(T data, int base, int retry) {
+		while (--retry > 0) {
+			data.id = nextId(data.getClass(), 1);
+			try {
+				data.insert();
+				return true;
+			} catch (MongoException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
+	public static <T extends MongoObjectLongId> boolean add(T data, int base) {
+		int retry = 100;
+		return add(data, base, retry);
+	}
+
+	public static <T extends MongoObjectLongId> boolean add(T data) {
+		int base = 1;
+		return add(data, base);
 	}
 
 }
