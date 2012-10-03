@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,7 +92,23 @@ public class DynamicClientProxyFactoryBean implements InvocationHandler, Closeab
 			throw eRet;
 		}
 
-		return (ret == null) ? ret : ret[0];
+		if (ret == null) {
+			return ret;
+		}
+
+		if (method.getReturnType().isArray()) {
+			try {
+				Object newret = ret[0];
+				Method retMethod = newret.getClass().getMethod("getString");
+				newret = retMethod.invoke(newret);
+				newret = ((ArrayList<?>) newret).toArray(new String[0]);
+				return newret;
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return ret[0];
 	}
 
 }
