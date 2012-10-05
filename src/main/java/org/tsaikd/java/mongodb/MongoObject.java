@@ -17,6 +17,7 @@ import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
+import com.mongodb.util.JSON;
 
 public class MongoObject {
 
@@ -95,6 +96,21 @@ public class MongoObject {
 		} else {
 			throw new MongoException("Unsupported type: " + obj.getClass().getName());
 		}
+	}
+
+	public static <T extends MongoObject> T fromJsonString(Class<T> clazz, String json) throws MongoException {
+		try {
+			T ret = clazz.newInstance();
+			ret.fromJsonString(json);
+			return ret;
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new MongoException(e.getMessage(), e);
+		}
+	}
+
+	public MongoObject fromJsonString(String json) {
+		Object obj = JSON.parse(json);
+		return fromObject(obj);
 	}
 
 	public MongoObject fromDBRef(DBRef dbref) {
