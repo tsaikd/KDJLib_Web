@@ -89,6 +89,9 @@ public class MongoObject {
 	}
 
 	public MongoObject fromObject(Object obj) throws MongoException {
+		if (obj == null) {
+			return this;
+		}
 		if (obj instanceof DBRef) {
 			return fromDBRef((DBRef) obj);
 		} else if (obj instanceof DBObject) {
