@@ -10,16 +10,24 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.endpoint.dynamic.DynamicClientFactory;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 
 public class DynamicClientProxyFactoryBean implements InvocationHandler, Closeable {
 
 	static Log log = LogFactory.getLog(DynamicClientProxyFactoryBean.class);
 
+	public static int DefaultRetryMax = 1;
+	public static long DefaultRetryWaitMs = 0;
+	public static long DefaultConnectionTimeoutMs = 30000;
+	public static long DefaultReceiveTimeoutMs = 600000;
+
 	private org.apache.cxf.endpoint.Client epClient = null;
 	private Object proxy = null;
-	private int retryMax = 1;
-	private int retryNow = 0;
-	private long retryWaitMs = 0;
+	private int retryMax = DefaultRetryMax;
+	private long retryWaitMs = DefaultRetryWaitMs;
+	private long connectionTimeoutMs = DefaultConnectionTimeoutMs;
+	private long receiveTimeoutMs = DefaultReceiveTimeoutMs;
 
 	public <T> T create(Class<T> serviceClass, String wsdlUrl) {
 		if (proxy == null) {
@@ -27,6 +35,7 @@ public class DynamicClientProxyFactoryBean implements InvocationHandler, Closeab
 			epClient = dcf.createClient(wsdlUrl);
 			// set thread safe, http://cxf.apache.org/faq.html
 			epClient.getRequestContext().put("thread.local.request.context", "true");
+			setTimeout(connectionTimeoutMs, receiveTimeoutMs);
 			proxy = Proxy.newProxyInstance(serviceClass.getClassLoader(), getImplementingClasses(serviceClass), this);
 		}
 		return serviceClass.cast(proxy);
@@ -53,6 +62,16 @@ public class DynamicClientProxyFactoryBean implements InvocationHandler, Closeab
 		this.retryWaitMs = retryWaitMs;
 	}
 
+	public void setTimeout(long connectionTimeoutMs, long receiveTimeoutMs) {
+		this.connectionTimeoutMs = connectionTimeoutMs;
+		this.receiveTimeoutMs = receiveTimeoutMs;
+		if (epClient != null) {
+			HTTPClientPolicy policy = ((HTTPConduit) epClient.getConduit()).getClient();
+			policy.setConnectionTimeout(connectionTimeoutMs);
+			policy.setReceiveTimeout(receiveTimeoutMs);
+		}
+	}
+
 	@Override
 	public void close() throws IOException {
 		if (epClient != null) {
@@ -60,9 +79,10 @@ public class DynamicClientProxyFactoryBean implements InvocationHandler, Closeab
 			epClient = null;
 		}
 		proxy = null;
-		retryMax = 1;
-		retryNow = 0;
-		retryWaitMs = 0;
+		retryMax = DefaultRetryMax;
+		retryWaitMs = DefaultRetryWaitMs;
+		connectionTimeoutMs = DefaultConnectionTimeoutMs;
+		receiveTimeoutMs = DefaultReceiveTimeoutMs;
 	}
 
 	@Override
@@ -72,11 +92,11 @@ public class DynamicClientProxyFactoryBean implements InvocationHandler, Closeab
 		}
 		Object[] ret = null;
 		Exception eRet = null;
+		int retryNow = 0;
 
 		while (retryNow < retryMax) {
 			try {
 				ret = epClient.invoke(method.getName(), args);
-				retryNow = 0;
 				eRet = null;
 				break;
 			} catch (Exception e) {
