@@ -80,6 +80,12 @@ public class ServletUtils {
 		return testPath;
 	}
 
+	public static boolean isJspExists(HttpServletRequest request, String path) {
+		Object[] objs = getIncludeFile(request, path, "jsp");
+		File file = (File) objs[0];
+		return file.exists();
+	}
+
 	public static boolean isJsExists(HttpServletRequest request, String path) {
 		Object[] objs = getIncludeFile(request, path, "js");
 		File file = (File) objs[0];
@@ -111,7 +117,7 @@ public class ServletUtils {
 		return file.exists();
 	}
 
-	public static void includeCss(JspWriter out, HttpServletRequest request, String path) throws Exception {
+	public static void includeCss(JspWriter out, HttpServletRequest request, String path) throws IOException {
 		Object[] objs = getIncludeFile(request, path, "css");
 		File file = (File) objs[0];
 		String testPath = (String) objs[1];
