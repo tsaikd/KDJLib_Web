@@ -1,10 +1,18 @@
 package org.tsaikd.java.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.zip.CRC32;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.jsp.JspWriter;
 
 import org.apache.commons.io.IOUtils;
@@ -134,6 +142,134 @@ public class ServletUtils {
 			testPath = path;
 		}
 		out.println("<link type=\"text/css\" rel=\"stylesheet\" href=\"" + testPath + "\"/>");
+	}
+
+	public static boolean checkEtagIsCached(HttpServletRequest req, HttpServletResponse res, String etag) {
+		res.setHeader("ETag", etag);
+
+		String previousToken = req.getHeader("If-None-Match");
+		if ((res.getStatus() < 400) && previousToken != null && previousToken.equals(etag)) {
+			res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+
+			String modelLastModified = req.getHeader("If-Modified-Since");
+			if (modelLastModified != null) {
+				res.setHeader("Last-Modified", modelLastModified);
+			}
+
+			return true;
+		}
+
+		res.setDateHeader("Last-Modified", System.currentTimeMillis());
+		res.setStatus(HttpServletResponse.SC_OK);
+		return false;
+	}
+
+	public static boolean checkEtagIsCached(HttpServletRequest req, HttpServletResponse res, long modelLastModifiedDateMs) {
+		res.setHeader("ETag", Long.toString(modelLastModifiedDateMs));
+		res.setDateHeader("Last-Modified", modelLastModifiedDateMs);
+
+		// need to check header date
+		long headerDateMs = req.getDateHeader("If-Modified-Since");
+		if (headerDateMs > 0) {
+			// browser date accuracy only to second
+			if ((modelLastModifiedDateMs/1000) > (headerDateMs/1000)) {
+				res.setStatus(HttpServletResponse.SC_OK);
+				return false;
+			}
+		}
+
+		// if over expire data, see the Etag
+		String previousToken = req.getHeader("If-None-Match");
+		if ((res.getStatus() < 400) && previousToken != null && previousToken.equals(String.valueOf(modelLastModifiedDateMs))) {
+			res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			return true;
+		}
+
+		// if the model has modified, setup the new modified date
+		res.setStatus(HttpServletResponse.SC_OK);
+		return false;
+	}
+
+	private static class ByteServletOutputStream extends ServletOutputStream {
+
+		private ByteArrayOutputStream baos;
+
+		public ByteServletOutputStream(ByteArrayOutputStream baos) {
+			this.baos = baos;
+		}
+
+		@Override
+		public void write(int b) throws IOException {
+			baos.write(b);
+		}
+
+	}
+
+	private static class EtagHttpResponseWrapper extends HttpServletResponseWrapper {
+
+		private ByteArrayOutputStream baos;
+		private ByteServletOutputStream bsos;
+		private PrintWriter printWriter;
+
+		public EtagHttpResponseWrapper(HttpServletResponse response, ByteArrayOutputStream baos) {
+			super(response);
+			this.baos = baos;
+			bsos = new ByteServletOutputStream(baos);
+		}
+
+		@Override
+		public ServletOutputStream getOutputStream() {
+			return bsos;
+		}
+
+		@Override
+		public PrintWriter getWriter() {
+			if (printWriter == null) {
+				printWriter = new PrintWriter(bsos);
+			}
+			return printWriter;
+		}
+
+		@Override
+		public void flushBuffer() throws IOException {
+			bsos.flush();
+			if (printWriter != null) {
+				printWriter.flush();
+			}
+		}
+
+		public String getEtag() {
+			byte[] data = baos.toByteArray();
+			CRC32 crc32 = new CRC32();
+			crc32.update(data);
+			return String.valueOf(crc32.getValue());
+		}
+
+	}
+
+	public static void etagFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
+		if (res.getHeader("ETag") != null) {
+			// etag already set
+			chain.doFilter(req, res);
+			return;
+		}
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		EtagHttpResponseWrapper ehrw = new EtagHttpResponseWrapper(res, baos);
+
+		// pass the request/response on
+		chain.doFilter(req, ehrw);
+
+		ehrw.flushBuffer();
+
+		if (ServletUtils.checkEtagIsCached(req, ehrw, ehrw.getEtag())) {
+			return;
+		}
+
+		ehrw.setContentLength(baos.size());
+		ServletOutputStream sos = res.getOutputStream();
+		sos.write(baos.toByteArray());
+		sos.close();
 	}
 
 }
