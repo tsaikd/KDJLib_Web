@@ -6,7 +6,7 @@
 		<version>LATEST</version>
 	</parent>
 	<artifactId>KDJLib_Web</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<repositories>
 		<repository>
 			<id>morphia.googlecode.com</id>
@@ -74,19 +74,61 @@
 			<version>LATEST</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>LATEST</version>
+		</dependency>
+
+		<!-- used for DynamicWebServiceClient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>LATEST</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.axis2</groupId>
+			<artifactId>axis2-transport-http</artifactId>
 			<version>LATEST</version>
 			<exclusions>
 				<exclusion>
-					<artifactId>asm</artifactId>
-					<groupId>asm</groupId>
+					<artifactId>servlet-api</artifactId>
+					<groupId>javax.servlet</groupId>
 				</exclusion>
 				<exclusion>
-					<artifactId>geronimo-javamail_1.4_spec</artifactId>
-					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>woden-api</artifactId>
+					<groupId>org.apache.woden</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>woden-impl-dom</artifactId>
+					<groupId>org.apache.woden</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jsr311-api</artifactId>
+					<groupId>javax.ws.rs</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-fileupload</artifactId>
+					<groupId>commons-fileupload</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>apache-mime4j-core</artifactId>
+					<groupId>org.apache.james</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jaxen</artifactId>
+					<groupId>jaxen</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.axis2</groupId>
+			<artifactId>axis2-adb</artifactId>
+			<version>LATEST</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.axis2</groupId>
+			<artifactId>axis2-transport-local</artifactId>
+			<version>LATEST</version>
 		</dependency>
 	</dependencies>
 </project>
