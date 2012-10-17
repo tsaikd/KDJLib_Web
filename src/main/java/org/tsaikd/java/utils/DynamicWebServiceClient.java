@@ -5,15 +5,23 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TimeZone;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.addressing.EndpointReference;
+import org.apache.axis2.databinding.utils.BeanUtil;
+import org.apache.axis2.engine.DefaultObjectSupplier;
 import org.apache.axis2.rpc.client.RPCServiceClient;
+import org.apache.axis2.transport.http.HTTPConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
@@ -22,6 +30,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.sun.org.apache.xpath.internal.XPathAPI;
@@ -36,8 +45,10 @@ public class DynamicWebServiceClient implements InvocationHandler {
 
 	private static DefaultHttpClient httpClient = new DefaultHttpClient();
 	private static DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
 	private HashMap<String, String> mapMethodAction = new HashMap<>();
+	private HashMap<String, String[]> mapMethodArgName = new HashMap<>();
 	private int retryMax = DefaultRetryMax;
 	private long retryWaitMs = DefaultRetryWaitMs;
 	private long receiveTimeoutMs = DefaultReceiveTimeoutMs;
@@ -63,15 +74,18 @@ public class DynamicWebServiceClient implements InvocationHandler {
 				String httpData = EntityUtils.toString(httpRes.getEntity(), "UTF-8");
 				wsdlDoc = docFactory.newDocumentBuilder().parse(new ByteArrayInputStream(httpData.getBytes("UTF-8")));
 
-				Node node = XPathAPI.selectSingleNode(wsdlDoc, "//*[name()=\"soap:address\"]/@location");
+				Node node = XPathAPI.selectSingleNode(wsdlDoc, "//*[name()='soap:address'][@location]/@location");
 				EndpointReference epr = new EndpointReference(node.getNodeValue());
 
-				node = XPathAPI.selectSingleNode(wsdlDoc, "/*[name()=\"wsdl:definitions\"]/@targetNamespace");
+				node = XPathAPI.selectSingleNode(wsdlDoc, "/*[local-name()='definitions'][@targetNamespace]/@targetNamespace");
 				targetNamespace = node.getNodeValue();
 
 				wsClient = new RPCServiceClient();
 				wsClient.setTargetEPR(epr);
 				wsClient.getOptions().setTimeOutInMilliSeconds(receiveTimeoutMs);
+
+				// .NET Development Server not support this feature
+				wsClient.getOptions().setProperty(HTTPConstants.CHUNKED, false);
 
 				reflectProxy = Proxy.newProxyInstance(serviceClass.getClassLoader(), new Class[] {serviceClass}, this);
 			} catch (IOException | SAXException | ParserConfigurationException | TransformerException e) {
@@ -97,6 +111,34 @@ public class DynamicWebServiceClient implements InvocationHandler {
 		}
 	}
 
+	private String typeHandler(Class<?> type, Object value) {
+		String typeName = type.getName();
+		if (type.isPrimitive()) {
+			if (typeName.equals("int")) {
+				return typeHandler(Integer.class, value);
+			}
+		} else if (typeName.equals("java.util.Date")) {
+			SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return fmt.format(value);
+		}
+		return type.cast(value).toString();
+	}
+
+	private void addOMChild(OMElement wrapper, String name, Class<?> type, Object value) {
+		if (type.isArray()) {
+			Class<?> componentType = type.getComponentType();
+			for (Object obj : (Object[]) value) {
+				addOMChild(wrapper, name, componentType, obj);
+			}
+		} else {
+			String text = typeHandler(type, value);
+			OMElement child = soapFactory.createOMElement(name, targetNamespace, "");
+			child.setText(text);
+			wrapper.addChild(child);
+		}
+	}
+
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		if (null == args) {
@@ -108,20 +150,41 @@ public class DynamicWebServiceClient implements InvocationHandler {
 		Exception eRet = null;
 		int retryNow = 0;
 
-		if (mapMethodAction.containsKey(methodName)) {
-			wsClient.getOptions().setAction(mapMethodAction.get(methodName));
-		} else {
-			String selector = String.format("//*[name()=\"wsdl:operation\"][@name=\"%1$s\"]/*[name()=\"soap:operation\"]/@soapAction", methodName);
-			Node node = XPathAPI.selectSingleNode(wsdlDoc, selector);
-			mapMethodAction.put(methodName, node.getNodeValue());
-			wsClient.getOptions().setAction(node.getNodeValue());
+		synchronized (mapMethodAction) {
+			if (!mapMethodAction.containsKey(methodName)) {
+				String selector = String.format("//*[local-name()='operation'][@name='%1$s']/*[local-name()='operation'][@soapAction]/@soapAction", methodName);
+				Node node = XPathAPI.selectSingleNode(wsdlDoc, selector);
+				mapMethodAction.put(methodName, node.getNodeValue());
+			}
 		}
 
-		QName opName = new QName(targetNamespace, methodName);
+		synchronized (mapMethodArgName) {
+			if (!mapMethodArgName.containsKey(methodName)) {
+				ArrayList<String> argName = new ArrayList<>();
+				String selector = String.format("//*[local-name()='schema']/*[local-name()='element'][@name='%1$s']/*[local-name()='complexType']/*[local-name()='sequence']/*[local-name()='element'][@name]/@name", methodName);
+				NodeList nodeList = XPathAPI.selectNodeList(wsdlDoc, selector);
+				for (int i=0 ; i<nodeList.getLength() ; i++) {
+					Node node = nodeList.item(i);
+					argName.add(node.getNodeValue());
+				}
+				mapMethodArgName.put(methodName, argName.toArray(new String[]{}));
+			}
+		}
+		String[] argName = mapMethodArgName.get(methodName);
+		OMElement wrapper = soapFactory.createOMElement(methodName, targetNamespace, "");
+		Class<?>[] types = method.getParameterTypes();
+		for (int i=0 ; i<types.length ; i++) {
+			addOMChild(wrapper, argName[i], types[i], args[i]);
+		}
 
 		while (retryNow < retryMax) {
 			try {
-				ret = wsClient.invokeBlocking(opName, args, new Class[] {retType});
+				OMElement wsRes;
+				synchronized (wsClient) {
+					wsClient.getOptions().setAction(mapMethodAction.get(methodName));
+					wsRes = wsClient.sendReceive(wrapper);
+				}
+				ret = BeanUtil.deserialize(wsRes, new Class[] {retType}, new DefaultObjectSupplier());
 				eRet = null;
 				break;
 			} catch (Exception e) {
