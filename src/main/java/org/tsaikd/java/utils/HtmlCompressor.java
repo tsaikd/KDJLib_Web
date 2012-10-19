@@ -1,8 +1,7 @@
 package org.tsaikd.java.utils;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class HtmlCompressor {
 	}
 
 	public static void compress(String dstFile, List<String> srcFiles, ConfType type) throws Exception {
-		OutputStream os = new FileOutputStream(dstFile);
+		FileWriter fw = new FileWriter(dstFile);
 		StringBuilder sb = new StringBuilder();
 
 		for (String jsFile : srcFiles) {
@@ -41,7 +40,7 @@ public class HtmlCompressor {
 				continue;
 			}
 			log.debug("loading " + jsFile + " ...");
-			sb.append(FileUtils.readFileToString(file, "UTF-8"));
+			sb.append(FileUtils.readFileToString(file, "UTF-8").replaceAll("/\\*!", "/*"));
 		}
 
 		if (sb.length() > 0) {
@@ -54,9 +53,9 @@ public class HtmlCompressor {
 				comp = jsCompressor.compress(sb.toString());
 			}
 			if (comp != null) {
-				os.write(comp.getBytes());
+				fw.write(comp);
 			}
-			os.close();
+			fw.close();
 			log.debug("compressed to " + dstFile);
 		}
 	}
