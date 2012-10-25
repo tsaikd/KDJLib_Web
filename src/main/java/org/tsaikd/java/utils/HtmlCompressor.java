@@ -20,13 +20,13 @@ import com.googlecode.htmlcompressor.compressor.YuiCssCompressor;
 public class HtmlCompressor {
 
 	private static Logger log = Logger.getLogger(HtmlCompressor.class);
-	static String version = "6";
 	private static ClosureJavaScriptCompressor jsCompressor = new ClosureJavaScriptCompressor();
 	private static YuiCssCompressor cssCompressor = new YuiCssCompressor();
 
 	public enum ConfType {
 		Javascript,
-		CSS
+		CSS,
+		CombineText,
 	}
 
 	public static void compress(String dstFile, List<String> srcFiles, ConfType type) throws Exception {
@@ -36,27 +36,34 @@ public class HtmlCompressor {
 		for (String jsFile : srcFiles) {
 			File file = new File(jsFile);
 			if (!file.isFile()) {
-				log.warn("skip file: " + jsFile);
+				log.warn("Skip not found file: " + jsFile);
 				continue;
 			}
-			log.debug("loading " + jsFile + " ...");
+			log.debug("Loading " + jsFile + " ...");
 			sb.append(FileUtils.readFileToString(file, "UTF-8").replaceAll("/\\*!", "/*"));
 		}
 
 		if (sb.length() > 0) {
 			String comp = null;
-			if (type == ConfType.CSS) {
-				log.debug("compressing CSS ...");
+			switch (type) {
+			case CSS:
+				log.debug("Compressing CSS ...");
 				comp = cssCompressor.compress(sb.toString());
-			} else {
-				log.debug("compressing Javascript ...");
+				break;
+			case Javascript:
+				log.debug("Compressing Javascript ...");
 				comp = jsCompressor.compress(sb.toString());
+				break;
+			default:
+				log.debug("Combine plain text ...");
+				comp = sb.toString();
+				break;
 			}
 			if (comp != null) {
 				fw.write(comp);
 			}
 			fw.close();
-			log.debug("compressed to " + dstFile);
+			log.debug("Compressed to " + dstFile);
 		}
 	}
 
