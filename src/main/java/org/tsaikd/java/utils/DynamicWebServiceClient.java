@@ -122,7 +122,12 @@ public class DynamicWebServiceClient implements InvocationHandler {
 			fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
 			return fmt.format(value);
 		}
-		return type.cast(value).toString();
+		Object castValue = type.cast(value);
+		if (castValue == null) {
+			return null;
+		} else {
+			return castValue.toString();
+		}
 	}
 
 	private void addOMChild(OMElement wrapper, String name, Class<?> type, Object value) {
