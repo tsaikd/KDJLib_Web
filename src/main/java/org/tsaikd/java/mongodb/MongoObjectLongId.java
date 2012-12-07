@@ -21,12 +21,16 @@ public class MongoObjectLongId extends MongoObject {
 		return findOne(clazz, new BasicDBObject("_id", id));
 	}
 
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id, DBObject fields) throws MongoException {
+		return findOne(clazz, new BasicDBObject("_id", id), fields);
+	}
+
 	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id, String... fields) throws MongoException {
 		BasicDBObject fieldobj = new BasicDBObject();
 		for (String field : fields) {
 			fieldobj.put(field, 1);
 		}
-		return findOne(clazz, new BasicDBObject("_id", id), fieldobj);
+		return findOne(clazz, id, fieldobj);
 	}
 
 	public static <T extends MongoObjectLongId> WriteResult remove(Class<T> clazz, long id) throws MongoException {
