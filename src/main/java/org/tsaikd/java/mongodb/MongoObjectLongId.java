@@ -17,6 +17,18 @@ public class MongoObjectLongId extends MongoObject {
 	@Id
 	public long id;
 
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id) {
+		return findOneDBObj(clazz, new BasicDBObject("_id", id));
+	}
+
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id, DBObject fields) throws MongoException {
+		return findOneDBObj(clazz, new BasicDBObject("_id", id), fields);
+	}
+
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id, String... fields) throws MongoException {
+		return findOneDBObj(clazz, new BasicDBObject("_id", id), fields);
+	}
+
 	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id) throws MongoException {
 		return findOne(clazz, new BasicDBObject("_id", id));
 	}

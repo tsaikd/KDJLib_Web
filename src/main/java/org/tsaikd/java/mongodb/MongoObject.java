@@ -47,9 +47,34 @@ public class MongoObject {
 		}
 	}
 
-	public static <T extends MongoObject> T findOne(Class<T> clazz, DBObject o, DBObject fields) throws MongoException {
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, DBObject o) {
 		MappedClass mc = MappedClass.getMappedClass(clazz);
-		DBObject dbobj = mc.getCol().findOne(o, fields);
+		return mc.getCol().findOne(o);
+	}
+
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, DBObject o, DBObject fields) {
+		MappedClass mc = MappedClass.getMappedClass(clazz);
+		return mc.getCol().findOne(o, fields);
+	}
+
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, DBObject o, String... fields) throws MongoException {
+		BasicDBObject fieldobj = new BasicDBObject();
+		for (String field : fields) {
+			fieldobj.put(field, 1);
+		}
+		return findOneDBObj(clazz, o, fieldobj);
+	}
+
+	public static <T extends MongoObject> T findOne(Class<T> clazz, DBObject o) throws MongoException {
+		DBObject dbobj = findOneDBObj(clazz, o);
+		if (dbobj == null) {
+			return null;
+		}
+		return fromObject(clazz, dbobj);
+	}
+
+	public static <T extends MongoObject> T findOne(Class<T> clazz, DBObject o, DBObject fields) throws MongoException {
+		DBObject dbobj = findOneDBObj(clazz, o, fields);
 		if (dbobj == null) {
 			return null;
 		}
@@ -62,15 +87,6 @@ public class MongoObject {
 			fieldobj.put(field, 1);
 		}
 		return findOne(clazz, o, fieldobj);
-	}
-
-	public static <T extends MongoObject> T findOne(Class<T> clazz, DBObject o) throws MongoException {
-		MappedClass mc = MappedClass.getMappedClass(clazz);
-		DBObject dbobj = mc.getCol().findOne(o);
-		if (dbobj == null) {
-			return null;
-		}
-		return fromObject(clazz, dbobj);
 	}
 
 	public static <T extends MongoObject> WriteResult remove(Class<T> clazz, DBObject o) throws MongoException {
