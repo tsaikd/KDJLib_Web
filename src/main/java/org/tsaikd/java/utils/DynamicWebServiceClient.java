@@ -75,6 +75,12 @@ public class DynamicWebServiceClient implements InvocationHandler {
 				wsdlDoc = docFactory.newDocumentBuilder().parse(new ByteArrayInputStream(httpData.getBytes("UTF-8")));
 
 				Node node = XPathAPI.selectSingleNode(wsdlDoc, "//*[name()='soap:address'][@location]/@location");
+				if (node == null) {
+					node = XPathAPI.selectSingleNode(wsdlDoc, "//*[name()='wsdlsoap:address'][@location]/@location");
+				}
+				if (node == null) {
+					throw new ParserConfigurationException("cannot find EPR in wsdl " + wsdlUrl);
+				}
 				EndpointReference epr = new EndpointReference(node.getNodeValue());
 
 				node = XPathAPI.selectSingleNode(wsdlDoc, "/*[local-name()='definitions'][@targetNamespace]/@targetNamespace");
