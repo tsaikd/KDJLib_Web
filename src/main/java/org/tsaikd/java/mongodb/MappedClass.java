@@ -101,6 +101,9 @@ public class MappedClass {
 				if (Modifier.isProtected(field.getModifiers())) {
 					continue;
 				}
+				if (field.getName().startsWith("this$")) {
+					continue;
+				}
 				fields.add(new MappedField(field));
 			}
 			clazz = clazz.getSuperclass();
