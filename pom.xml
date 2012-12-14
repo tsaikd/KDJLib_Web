@@ -73,11 +73,6 @@
 			<artifactId>mongo-java-driver</artifactId>
 			<version>LATEST</version>
 		</dependency>
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>LATEST</version>
-		</dependency>
 
 		<!-- used for DynamicWebServiceClient -->
 		<dependency>

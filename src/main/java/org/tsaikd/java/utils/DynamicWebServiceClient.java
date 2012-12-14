@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TimeZone;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
@@ -33,8 +32,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.xpath.internal.XPathAPI;
-
 public class DynamicWebServiceClient implements InvocationHandler {
 
 	static Log log = LogFactory.getLog(DynamicWebServiceClient.class);
@@ -44,7 +41,6 @@ public class DynamicWebServiceClient implements InvocationHandler {
 	public static long DefaultReceiveTimeoutMs = 600000;
 
 	private static DefaultHttpClient httpClient = new DefaultHttpClient();
-	private static DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
 	private HashMap<String, String> mapMethodAction = new HashMap<>();
@@ -59,7 +55,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 	private String targetNamespace;
 
 	static {
-		docFactory.setNamespaceAware(true);
+		XPathUtils.getDocumentBuilderFactory().setNamespaceAware(true);
 	}
 
 	public <T> T create(Class<T> serviceClass, String wsdlUrl) {
@@ -72,18 +68,18 @@ public class DynamicWebServiceClient implements InvocationHandler {
 					throw new RuntimeException(httpRes.getStatusLine().getReasonPhrase());
 				}
 				String httpData = EntityUtils.toString(httpRes.getEntity(), "UTF-8");
-				wsdlDoc = docFactory.newDocumentBuilder().parse(new ByteArrayInputStream(httpData.getBytes("UTF-8")));
+				wsdlDoc = XPathUtils.parseDocumentr(new ByteArrayInputStream(httpData.getBytes("UTF-8")));
 
-				Node node = XPathAPI.selectSingleNode(wsdlDoc, "//*[name()='soap:address'][@location]/@location");
+				Node node = XPathUtils.selectSingleNode(wsdlDoc, "//*[name()='soap:address'][@location]/@location");
 				if (node == null) {
-					node = XPathAPI.selectSingleNode(wsdlDoc, "//*[name()='wsdlsoap:address'][@location]/@location");
+					node = XPathUtils.selectSingleNode(wsdlDoc, "//*[name()='wsdlsoap:address'][@location]/@location");
 				}
 				if (node == null) {
 					throw new ParserConfigurationException("cannot find EPR in wsdl " + wsdlUrl);
 				}
 				EndpointReference epr = new EndpointReference(node.getNodeValue());
 
-				node = XPathAPI.selectSingleNode(wsdlDoc, "/*[local-name()='definitions'][@targetNamespace]/@targetNamespace");
+				node = XPathUtils.selectSingleNode(wsdlDoc, "/*[local-name()='definitions'][@targetNamespace]/@targetNamespace");
 				targetNamespace = node.getNodeValue();
 
 				wsClient = new RPCServiceClient();
@@ -94,7 +90,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 				wsClient.getOptions().setProperty(HTTPConstants.CHUNKED, false);
 
 				reflectProxy = Proxy.newProxyInstance(serviceClass.getClassLoader(), new Class[] {serviceClass}, this);
-			} catch (IOException | SAXException | ParserConfigurationException | TransformerException e) {
+			} catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -164,7 +160,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 		synchronized (mapMethodAction) {
 			if (!mapMethodAction.containsKey(methodName)) {
 				String selector = String.format("//*[local-name()='operation'][@name='%1$s']/*[local-name()='operation'][@soapAction]/@soapAction", methodName);
-				Node node = XPathAPI.selectSingleNode(wsdlDoc, selector);
+				Node node = XPathUtils.selectSingleNode(wsdlDoc, selector);
 				mapMethodAction.put(methodName, node.getNodeValue());
 			}
 		}
@@ -173,7 +169,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 			if (!mapMethodArgName.containsKey(methodName)) {
 				ArrayList<String> argName = new ArrayList<>();
 				String selector = String.format("//*[local-name()='schema']/*[local-name()='element'][@name='%1$s']/*[local-name()='complexType']/*[local-name()='sequence']/*[local-name()='element'][@name]/@name", methodName);
-				NodeList nodeList = XPathAPI.selectNodeList(wsdlDoc, selector);
+				NodeList nodeList = XPathUtils.selectNodeList(wsdlDoc, selector);
 				for (int i=0 ; i<nodeList.getLength() ; i++) {
 					Node node = nodeList.item(i);
 					argName.add(node.getNodeValue());
