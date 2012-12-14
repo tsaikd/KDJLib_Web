@@ -31,7 +31,7 @@ public class MongoObject {
 		return MappedClass.getMappedClass(getClass());
 	}
 
-	protected DBCollection getCol() {
+	public DBCollection getCol() {
 		return getMappedClass().getCol();
 	}
 
