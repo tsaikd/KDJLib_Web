@@ -1,5 +1,7 @@
 package org.tsaikd.java.mongodb;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,6 +44,10 @@ public class QueryHelp extends BasicDBObject {
 
 	public QueryHelp filterPull(String key, Object value) {
 		return filter("$pull", new QueryHelp(key, value));
+	}
+
+	public QueryHelp filterPullAll(String key, List<?> value) {
+		return putBaseKeyValue("$pullAll", key, value);
 	}
 
 	public QueryHelp putBaseKeyValue(String base, String key, Object value) {
