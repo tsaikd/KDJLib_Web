@@ -219,7 +219,7 @@ public class MappedField {
 		}
 	}
 
-	public DBObject getDBObject(Object obj, boolean extendRef, boolean originIdField) {
+	public DBObject getDBObject(Object obj, boolean extendRef, boolean originIdField, boolean keepNativeDefValue) {
 		if (isDBObject) {
 			return (DBObject) getObject(obj);
 		}
@@ -227,11 +227,11 @@ public class MappedField {
 		if (value == null) {
 			return null;
 		} else {
-			return value.toDBObject(extendRef, originIdField);
+			return value.toDBObject(extendRef, originIdField, keepNativeDefValue);
 		}
 	}
 
-	public BasicDBList getDBList(Object obj, boolean extendRef, boolean originIdField) {
+	public BasicDBList getDBList(Object obj, boolean extendRef, boolean originIdField, boolean keepNativeDefValue) {
 		if (!isList) {
 			log.error("Cannot getDBList with invalid type");
 			return null;
@@ -242,12 +242,12 @@ public class MappedField {
 			if (isReference) {
 				MongoObject value = (MongoObject) forobj;
 				if (extendRef && value.isFetched) {
-					ret.add(value.toDBObject(extendRef, originIdField));
+					ret.add(value.toDBObject(extendRef, originIdField, keepNativeDefValue));
 				} else {
 					ret.add(value.toDBRef());
 				}
 			} else if (isMongoObject) {
-				ret.add(((MongoObject) forobj).toDBObject(extendRef, originIdField));
+				ret.add(((MongoObject) forobj).toDBObject(extendRef, originIdField, keepNativeDefValue));
 			} else {
 				ret.add(forobj);
 			}
@@ -259,9 +259,9 @@ public class MappedField {
 		}
 	}
 
-	public Object getDBValue(Object obj, boolean extendRef, boolean originIdField) {
+	public Object getDBValue(Object obj, boolean extendRef, boolean originIdField, boolean keepNativeDefValue) {
 		if (isList) {
-			return getDBList(obj, extendRef, originIdField);
+			return getDBList(obj, extendRef, originIdField, keepNativeDefValue);
 		}
 
 		Object value = getObject(obj);
@@ -274,7 +274,7 @@ public class MappedField {
 		}
 
 		if (isNativeClass) {
-			if (value.equals(defValue)) {
+			if (!keepNativeDefValue && value.equals(defValue)) {
 				return null;
 			}
 		}
@@ -286,7 +286,7 @@ public class MappedField {
 					return mobj.toDBRef();
 				}
 			}
-			BasicDBObject ret = mobj.toDBObject(extendRef, originIdField);
+			BasicDBObject ret = mobj.toDBObject(extendRef, originIdField, keepNativeDefValue);
 			if (ret.isEmpty()) {
 				return null;
 			}

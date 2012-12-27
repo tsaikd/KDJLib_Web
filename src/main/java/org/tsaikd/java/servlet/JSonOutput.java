@@ -35,7 +35,7 @@ public class JSonOutput extends MongoObject {
 		}
 		res.setContentType("application/json");
 		PrintWriter out = res.getWriter();
-		out.write(toDBObject(true, true).toString());
+		out.write(toDBObject(true, true, false).toString());
 		out.close();
 	}
 

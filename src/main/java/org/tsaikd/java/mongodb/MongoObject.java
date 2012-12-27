@@ -164,11 +164,11 @@ public class MongoObject {
 		return this;
 	}
 
-	public BasicDBObject toDBObject(boolean extendRef, boolean originIdField) {
+	public BasicDBObject toDBObject(boolean extendRef, boolean originIdField, boolean keepNativeDefValue) {
 		BasicDBObject dbobj = new BasicDBObject();
 		MappedClass mc = getMappedClass();
 		if (mc.idField != null) {
-			Object id = mc.idField.getDBValue(this, false, originIdField);
+			Object id = mc.idField.getDBValue(this, false, originIdField, keepNativeDefValue);
 			if (id != null) {
 				dbobj.put("_id", id);
 				if (originIdField) {
@@ -177,7 +177,7 @@ public class MongoObject {
 			}
 		}
 		for (MappedField field : mc.persistenceFields.values()) {
-			Object value = field.getDBValue(this, extendRef, originIdField);
+			Object value = field.getDBValue(this, extendRef, originIdField, keepNativeDefValue);
 			if (value != null) {
 				dbobj.put(field.getName(), value);
 			}
@@ -186,7 +186,7 @@ public class MongoObject {
 	}
 
 	public BasicDBObject toDBObject() {
-		return toDBObject(true, false);
+		return toDBObject(true, false, false);
 	}
 
 	public Object getId() {
@@ -200,7 +200,7 @@ public class MongoObject {
 	public Object getIdDBValue() {
 		MappedClass mc = getMappedClass();
 		if (mc.idField != null) {
-			return mc.idField.getDBValue(this, false, false);
+			return mc.idField.getDBValue(this, false, false, false);
 		}
 		return null;
 	}
@@ -210,7 +210,7 @@ public class MongoObject {
 	}
 
 	public boolean isEmpty() {
-		return toDBObject(false, false).keySet().isEmpty();
+		return toDBObject(false, false, false).keySet().isEmpty();
 	}
 
 	@Override
@@ -283,17 +283,17 @@ public class MongoObject {
 	}
 
 	public MongoObject clone() {
-		return MongoObject.fromObject(getClass(), toDBObject(false, false));
+		return MongoObject.fromObject(getClass(), toDBObject(false, false, true));
 	}
 
 	public MongoObject save() {
 		DBCollection col = getCol();
-		col.save(toDBObject(false, false));
+		col.save(toDBObject(false, false, false));
 		return this;
 	}
 
 	public MongoObject insert() throws MongoException {
-		getCol().insert(toDBObject(false, false));
+		getCol().insert(toDBObject(false, false, false));
 		getDB().getLastError().throwOnError();
 		return this;
 	}
@@ -311,7 +311,7 @@ public class MongoObject {
 			if (mf == null) {
 				throw new MongoException("Invalid field: " + field);
 			}
-			Object value = mf.getDBValue(this, false, false);
+			Object value = mf.getDBValue(this, false, false, false);
 			if (value == null) {
 				unset.put(field, 1);
 			} else {

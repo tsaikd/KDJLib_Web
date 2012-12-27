@@ -6,14 +6,7 @@
 		<version>LATEST</version>
 	</parent>
 	<artifactId>KDJLib_Web</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
-	<repositories>
-		<repository>
-			<id>morphia.googlecode.com</id>
-			<name>Morphia Repo at Google Code</name>
-			<url>http://morphia.googlecode.com/svn/mavenrepo</url>
-		</repository>
-	</repositories>
+	<version>0.0.6-SNAPSHOT</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.tsaikd.java</groupId>
