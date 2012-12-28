@@ -300,15 +300,38 @@ public class MappedField {
 		return getObject(obj);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void setObject(Object obj, Object value) throws MongoException {
 		try {
-			if (value == null && isList) {
-				field.set(obj, newInstance());
-			} else if (value == null && isNativeType) {
-				field.set(obj, defValue);
+			if (value == null) {
+				if (isList) {
+					field.set(obj, newInstance());
+					return;
+				}
+				if (isNativeType) {
+					field.set(obj, defValue);
+					return;
+				}
 			} else {
-				field.set(obj, value);
+				if (isNativeClass) {
+					String typename = field.getType().getName();
+					if (value instanceof java.lang.Double) {
+						if (typename.equals("java.lang.Integer")) {
+							field.set(obj, (int)(double)value);
+							return;
+						}
+						if (typename.equals("java.lang.Long")) {
+							field.set(obj, (long)(double)value);
+							return;
+						}
+					}
+				}
+				if (isEnum && value instanceof String) {
+					field.set(obj, Enum.valueOf((Class<? extends Enum>) field.getType(), (String) value));
+					return;
+				}
 			}
+			field.set(obj, value);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new MongoException(e.getMessage(), e);
 		}
@@ -364,7 +387,6 @@ public class MappedField {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void set(Object obj, Object value) {
 		if (value instanceof DBRef) {
 			set(obj, (DBRef) value);
@@ -372,8 +394,6 @@ public class MappedField {
 			set(obj, (BasicDBList) value);
 		} else if (value instanceof DBObject) {
 			set(obj, (DBObject) value);
-		} else if (isEnum && value instanceof String) {
-			setObject(obj, Enum.valueOf((Class<? extends Enum>) field.getType(), (String) value));
 		} else {
 			setObject(obj, value);
 		}
