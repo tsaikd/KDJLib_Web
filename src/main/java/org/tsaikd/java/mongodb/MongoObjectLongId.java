@@ -21,31 +21,65 @@ public class MongoObjectLongId extends MongoObject {
 		return findOneDBObj(clazz, new BasicDBObject("_id", id));
 	}
 
-	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id, DBObject fields) throws MongoException {
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, Long id) {
+		if (id == null) {
+			return null;
+		}
+		return findOneDBObj(clazz, new BasicDBObject("_id", id));
+	}
+
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id, DBObject fields) {
 		return findOneDBObj(clazz, new BasicDBObject("_id", id), fields);
 	}
 
-	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id, String... fields) throws MongoException {
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, Long id, DBObject fields) {
+		if (id == null) {
+			return null;
+		}
 		return findOneDBObj(clazz, new BasicDBObject("_id", id), fields);
 	}
 
-	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id) throws MongoException {
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, long id, String... fields) {
+		return findOneDBObj(clazz, new BasicDBObject("_id", id), fields);
+	}
+
+	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, Long id, String... fields) {
+		if (id == null) {
+			return null;
+		}
+		return findOneDBObj(clazz, new BasicDBObject("_id", id), fields);
+	}
+
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id) {
 		return findOne(clazz, new BasicDBObject("_id", id));
 	}
 
-	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id, DBObject fields) throws MongoException {
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, Long id) {
+		if (id == null) {
+			return null;
+		}
+		return findOne(clazz, new BasicDBObject("_id", id));
+	}
+
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id, DBObject fields) {
 		return findOne(clazz, new BasicDBObject("_id", id), fields);
 	}
 
-	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, long id, String... fields) throws MongoException {
-		BasicDBObject fieldobj = new BasicDBObject();
-		for (String field : fields) {
-			fieldobj.put(field, 1);
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, Long id, DBObject fields) {
+		if (id == null) {
+			return null;
 		}
-		return findOne(clazz, id, fieldobj);
+		return findOne(clazz, new BasicDBObject("_id", id), fields);
 	}
 
-	public static <T extends MongoObjectLongId> WriteResult remove(Class<T> clazz, long id) throws MongoException {
+	public static <T extends MongoObjectLongId> T findOne(Class<T> clazz, Long id, String... fields) {
+		if (id == null) {
+			return null;
+		}
+		return findOne(clazz, new BasicDBObject("_id", id), fields);
+	}
+
+	public static <T extends MongoObjectLongId> WriteResult remove(Class<T> clazz, Long id) {
 		return remove(clazz, new BasicDBObject("_id", id));
 	}
 
@@ -53,9 +87,8 @@ public class MongoObjectLongId extends MongoObject {
 	 * @param clazz
 	 * @param base 1 or -1
 	 * @return id
-	 * @throws MongoException
 	 */
-	protected static long nextId(Class<? extends MongoObjectLongId> clazz, int base) throws MongoException {
+	protected static long nextId(Class<? extends MongoObjectLongId> clazz, int base) {
 		MappedClass mc = MappedClass.getMappedClass(clazz);
 		long ret = (base < 0) ? -1 : 1;
 		BasicDBObject sort = new BasicDBObject("_id", ((base < 0) ? 1 : -1));
