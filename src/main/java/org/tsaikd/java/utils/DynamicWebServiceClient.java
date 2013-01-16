@@ -21,11 +21,13 @@ import org.apache.axis2.databinding.utils.BeanUtil;
 import org.apache.axis2.engine.DefaultObjectSupplier;
 import org.apache.axis2.rpc.client.RPCServiceClient;
 import org.apache.axis2.transport.http.HTTPConstants;
+import org.apache.axis2.transport.http.HttpTransportProperties.ProxyProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -40,7 +42,6 @@ public class DynamicWebServiceClient implements InvocationHandler {
 	public static long DefaultRetryWaitMs = 0;
 	public static long DefaultReceiveTimeoutMs = 600000;
 
-	private static DefaultHttpClient httpClient = new DefaultHttpClient();
 	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
 	private HashMap<String, String> mapMethodAction = new HashMap<>();
@@ -58,11 +59,12 @@ public class DynamicWebServiceClient implements InvocationHandler {
 		XPathUtils.getDocumentBuilderFactory().setNamespaceAware(true);
 	}
 
-	public <T> T create(Class<T> serviceClass, String wsdlUrl) {
+	public <T> T create(Class<T> serviceClass, String wsdlUrl, boolean noProxy) {
 		if (reflectProxy == null) {
 			try {
 				log.debug("Create WebService Client for " + wsdlUrl);
 				HttpGet method = new HttpGet(wsdlUrl);
+				HttpClient httpClient = new ConfigHttpClient(noProxy);
 				HttpResponse httpRes = httpClient.execute(method);
 				if (httpRes.getStatusLine().getStatusCode() >= 400) {
 					throw new RuntimeException(httpRes.getStatusLine().getReasonPhrase());
@@ -84,6 +86,15 @@ public class DynamicWebServiceClient implements InvocationHandler {
 
 				wsClient = new RPCServiceClient();
 				wsClient.setTargetEPR(epr);
+				if (!noProxy) {
+					HttpHost httpProxy = ConfigHttpClient.getDefaultProxy();
+					if (httpProxy != null) {
+						ProxyProperties proxyProperty = new ProxyProperties();
+						proxyProperty.setProxyName(httpProxy.getHostName());
+						proxyProperty.setProxyPort(httpProxy.getPort());
+						wsClient.getOptions().setProperty(HTTPConstants.PROXY, proxyProperty);
+					}
+				}
 				wsClient.getOptions().setTimeOutInMilliSeconds(receiveTimeoutMs);
 
 				// .NET Development Server not support this feature
@@ -95,6 +106,10 @@ public class DynamicWebServiceClient implements InvocationHandler {
 			}
 		}
 		return serviceClass.cast(reflectProxy);
+	}
+
+	public <T> T create(Class<T> serviceClass, String wsdlUrl) {
+		return create(serviceClass, wsdlUrl, false);
 	}
 
 	public <T> T get(Class<T> serviceClass) {
