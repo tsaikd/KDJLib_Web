@@ -349,7 +349,7 @@ public class MappedField {
 	public void set(Object obj, DBRef value) {
 		MongoObject newobj = (MongoObject) MappedClass.newInstance(value.getRef());
 		MappedClass mc = MappedClass.getMappedClass(newobj.getClass());
-		mc.idField.setObject(newobj, value.getId());
+		mc.idField.set(newobj, value.getId());
 		newobj.isRef = true;
 		setObject(obj, newobj);
 	}

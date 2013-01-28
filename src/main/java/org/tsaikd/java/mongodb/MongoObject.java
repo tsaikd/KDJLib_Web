@@ -112,6 +112,8 @@ public class MongoObject {
 			return fromDBRef((DBRef) obj);
 		} else if (obj instanceof DBObject) {
 			return fromDBObject((DBObject) obj);
+		} else if (obj instanceof MongoObject) {
+			return fromMongoObject((MongoObject) obj);
 		} else {
 			throw new MongoException("Unsupported type: " + obj.getClass().getName());
 		}
@@ -162,6 +164,10 @@ public class MongoObject {
 			mc.idField.set(this, idValue);
 		}
 		return this;
+	}
+
+	public MongoObject fromMongoObject(MongoObject mongoObj) throws MongoException {
+		return fromDBObject(mongoObj.toDBObject(true, true, true));
 	}
 
 	public BasicDBObject toDBObject(boolean extendRef, boolean originIdField, boolean keepNativeDefValue) {

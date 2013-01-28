@@ -14,6 +14,48 @@ public class QueryHelp extends BasicDBObject {
 	private static final long serialVersionUID = 1L;
 	static Log log = LogFactory.getLog(QueryHelp.class);
 
+	enum SmartOp {
+		Set,
+		Unset,
+	}
+
+	public static SmartOp checkSmart(Object value) {
+		if (value == null) {
+			return SmartOp.Unset;
+		} else if (value instanceof String) {
+			String val = (String) value;
+			if (val.isEmpty()) {
+				return SmartOp.Unset;
+			}
+		} else if (value instanceof Integer) {
+			Integer val = (Integer) value;
+			if (val == 0) {
+				return SmartOp.Unset;
+			}
+		} else if (value instanceof Long) {
+			Long val = (Long) value;
+			if (val == 0) {
+				return SmartOp.Unset;
+			}
+		} else if (value instanceof Float) {
+			Float val = (Float) value;
+			if (val == 0) {
+				return SmartOp.Unset;
+			}
+		} else if (value instanceof Double) {
+			Double val = (Double) value;
+			if (val == 0) {
+				return SmartOp.Unset;
+			}
+		} else if (value instanceof List) {
+			List<?> val = (List<?>) value;
+			if (val.isEmpty()) {
+				return SmartOp.Unset;
+			}
+		}
+		return SmartOp.Set;
+	}
+
 	public QueryHelp() {
 	}
 
@@ -50,6 +92,14 @@ public class QueryHelp extends BasicDBObject {
 		return putBaseKeyValue("$pullAll", key, value);
 	}
 
+	public QueryHelp filterPush(String key, Object value) {
+		return filter("$push", new QueryHelp(key, value));
+	}
+
+	public QueryHelp filterPushAll(String key, List<?> value) {
+		return putBaseKeyValue("$pushAll", key, value);
+	}
+
 	public QueryHelp putBaseKeyValue(String base, String key, Object value) {
 		if (containsField(base)) {
 			QueryHelp baseObj = (QueryHelp) get(base);
@@ -82,6 +132,15 @@ public class QueryHelp extends BasicDBObject {
 
 	public QueryHelp filterSet(String key, Object value) {
 		return putBaseKeyValue("$set", key, value);
+	}
+
+	public QueryHelp filterSetSmart(String key, Object value) {
+		SmartOp op = checkSmart(value);
+		if (op == SmartOp.Unset) {
+			return filterUnset(key);
+		} else {
+			return putBaseKeyValue("$set", key, value);
+		}
 	}
 
 	public QueryHelp filterUnset(String key) {
