@@ -1,10 +1,13 @@
 package org.tsaikd.java.servlet;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.LinkedList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.tsaikd.java.mongodb.JSONLongIdCallback;
@@ -24,6 +27,7 @@ public class BaseParamContext {
 		this.res = res;
 	}
 
+	// String
 	public static LinkedList<String> getParams(HttpServletRequest req, String name) {
 		LinkedList<String> list = new LinkedList<>();
 		String[] values = req.getParameterValues(name);
@@ -61,6 +65,7 @@ public class BaseParamContext {
 		return value;
 	}
 
+	// Integer
 	public static LinkedList<Integer> getParamInts(HttpServletRequest req, String name) {
 		LinkedList<Integer> res = new LinkedList<>();
 		LinkedList<String> values = getParams(req, name);
@@ -93,6 +98,7 @@ public class BaseParamContext {
 		return value;
 	}
 
+	// Long
 	public static LinkedList<Long> getParamLongs(HttpServletRequest req, String name) {
 		LinkedList<Long> res = new LinkedList<>();
 		LinkedList<String> values = getParams(req, name);
@@ -125,6 +131,7 @@ public class BaseParamContext {
 		return value;
 	}
 
+	// Boolean
 	public static Boolean getParamBoolean(HttpServletRequest req, String name, Boolean defValue) {
 		String value = getParam(req, name, null);
 		if (value == null) {
@@ -169,6 +176,48 @@ public class BaseParamContext {
 		return value;
 	}
 
+	// Date
+	private static String[] dateFormats = {
+		"yyyy-MM-dd",
+		"yyyyMMdd",
+		"yyyy/MM/dd",
+	};
+	public static LinkedList<Date> getParamDates(HttpServletRequest req, String name) {
+		LinkedList<Date> res = new LinkedList<>();
+		LinkedList<String> values = getParams(req, name);
+		for (String value : values) {
+			try {
+				Date date = DateUtils.parseDate(value, dateFormats);
+				res.add(date);
+			} catch (ParseException e) {
+				throw new IllegalArgumentException(e.getMessage(), e);
+			}
+		}
+		return res;
+	}
+
+	public LinkedList<Date> getParamDates(String name) {
+		return getParamDates(req, name);
+	}
+
+	public static Date getParamDate(HttpServletRequest req, String name, Date defValue) {
+		LinkedList<Date> res = getParamDates(req, name);
+		return res.isEmpty() ? defValue : res.getLast();
+	}
+
+	public Date getParamDate(String name, Date defValue) {
+		return getParamDate(req, name, defValue);
+	}
+
+	public Date getParamDate(String name) {
+		Date value = getParamDate(name, null);
+		if (value == null) {
+			throw new IllegalArgumentException("field " + name + " is a must parameter");
+		}
+		return value;
+	}
+
+	// Json
 	public static LinkedList<Object> getParamJsons(HttpServletRequest req, String name) {
 		LinkedList<Object> res = new LinkedList<>();
 		LinkedList<String> values = getParams(req, name);
