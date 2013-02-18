@@ -44,7 +44,6 @@ public class DynamicWebServiceClient implements InvocationHandler {
 
 	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
-	private HashMap<String, String> mapMethodAction = new HashMap<>();
 	private HashMap<String, String[]> mapMethodArgName = new HashMap<>();
 	private int retryMax = DefaultRetryMax;
 	private long retryWaitMs = DefaultRetryWaitMs;
@@ -96,6 +95,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 					}
 				}
 				wsClient.getOptions().setTimeOutInMilliSeconds(receiveTimeoutMs);
+				wsClient.getOptions().setSoapVersionURI(org.apache.axis2.namespace.Constants.URI_SOAP12_ENV);
 
 				// .NET Development Server not support this feature
 				wsClient.getOptions().setProperty(HTTPConstants.CHUNKED, false);
@@ -172,14 +172,6 @@ public class DynamicWebServiceClient implements InvocationHandler {
 		Exception eRet = null;
 		int retryNow = 0;
 
-		synchronized (mapMethodAction) {
-			if (!mapMethodAction.containsKey(methodName)) {
-				String selector = String.format("//*[local-name()='operation'][@name='%1$s']/*[local-name()='operation'][@soapAction]/@soapAction", methodName);
-				Node node = XPathUtils.selectSingleNode(wsdlDoc, selector);
-				mapMethodAction.put(methodName, node.getNodeValue());
-			}
-		}
-
 		synchronized (mapMethodArgName) {
 			if (!mapMethodArgName.containsKey(methodName)) {
 				ArrayList<String> argName = new ArrayList<>();
@@ -203,7 +195,6 @@ public class DynamicWebServiceClient implements InvocationHandler {
 			try {
 				OMElement wsRes;
 				synchronized (wsClient) {
-					wsClient.getOptions().setAction(mapMethodAction.get(methodName));
 					wsRes = wsClient.sendReceive(wrapper);
 				}
 				ret = BeanUtil.deserialize(wsRes, new Class[] {retType}, new DefaultObjectSupplier());
@@ -225,18 +216,6 @@ public class DynamicWebServiceClient implements InvocationHandler {
 		if (ret == null) {
 			return ret;
 		}
-
-//		if (retType.isArray()) {
-//			try {
-//				Object newret = ret[0];
-//				Method retMethod = newret.getClass().getMethod("getString");
-//				newret = retMethod.invoke(newret);
-//				newret = ((ArrayList<?>) newret).toArray(new String[0]);
-//				return newret;
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
 
 		return ret[0];
 	}
