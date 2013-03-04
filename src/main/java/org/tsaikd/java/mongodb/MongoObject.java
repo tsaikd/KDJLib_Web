@@ -23,12 +23,16 @@ public class MongoObject {
 
 	static Log log = LogFactory.getLog(MongoObject.class);
 
-	protected static DB getDB() {
-		return MappedClass.db;
+	protected MappedClass cacheMappedClass = null;
+	protected MappedClass getMappedClass() {
+		if (cacheMappedClass == null) {
+			cacheMappedClass = MappedClass.getMappedClass(getClass());
+		}
+		return cacheMappedClass;
 	}
 
-	protected MappedClass getMappedClass() {
-		return MappedClass.getMappedClass(getClass());
+	public DB getDB() {
+		return getMappedClass().getDB();
 	}
 
 	public DBCollection getCol() {

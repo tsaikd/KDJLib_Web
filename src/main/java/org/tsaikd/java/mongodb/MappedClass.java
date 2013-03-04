@@ -118,6 +118,8 @@ public class MappedClass {
 	// field, option
 	public LinkedHashMap<BasicDBObject, BasicDBObject> indexFields = new LinkedHashMap<>();
 
+	private DB dbCustom = null;
+
 	private Class<?> clazz;
 
 	MappedClass(Class<?> clazz) throws MongoException {
@@ -178,8 +180,20 @@ public class MappedClass {
 		return cacheEntityName;
 	}
 
+	public DB getDB() {
+		if (dbCustom != null) {
+			return dbCustom;
+		}
+		return db;
+	}
+
+	public MappedClass setDB(DB dbTar) {
+		dbCustom = dbTar;
+		return this;
+	}
+
 	public DBCollection getCol() {
-		return db.getCollection(getEntityName());
+		return getDB().getCollection(getEntityName());
 	}
 
 	public Object newInstance() throws MongoException {
