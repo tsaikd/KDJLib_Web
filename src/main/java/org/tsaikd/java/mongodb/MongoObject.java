@@ -308,6 +308,17 @@ public class MongoObject {
 		return this;
 	}
 
+	public MongoObject setField(DBObject update) {
+		MappedClass mc = getMappedClass();
+		if (mc.idField == null) {
+			throw new MongoException("Cannot setField without Id annotation: " + update);
+		}
+
+		DBCollection col = getCol();
+		col.update(new BasicDBObject("_id", getIdDBValue()), update);
+		return this;
+	}
+
 	public MongoObject setField(String... fields) {
 		MappedClass mc = getMappedClass();
 		if (mc.idField == null) {
@@ -329,7 +340,6 @@ public class MongoObject {
 			}
 		}
 
-		DBCollection col = getCol();
 		BasicDBObject update = new BasicDBObject();
 		if (!unset.isEmpty()) {
 			update.put("$unset", unset);
@@ -337,8 +347,7 @@ public class MongoObject {
 		if (!set.isEmpty()) {
 			update.put("$set", set);
 		}
-		col.update(new BasicDBObject("_id", getIdDBValue()), update);
-		return this;
+		return setField(update);
 	}
 
 	public static CommandResult mapReduce(Class<? extends MongoObject> clazz, String map, String reduce, DBObject query) throws MongoException {
