@@ -139,7 +139,11 @@ public class QueryHelp extends BasicDBObject {
 		if (op == SmartOp.Unset) {
 			return filterUnset(key);
 		} else {
-			return putBaseKeyValue("$set", key, value);
+			if (value instanceof MongoObject) {
+				return putBaseKeyValue("$set", key, ((MongoObject) value).toDBObject());
+			} else {
+				return putBaseKeyValue("$set", key, value);
+			}
 		}
 	}
 
