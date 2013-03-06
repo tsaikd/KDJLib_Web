@@ -338,12 +338,7 @@ public class MappedField {
 	}
 
 	public void setEmpty(Object obj) {
-		if (isMongoObject && !isList && !isReference) {
-			MongoObject newobj = (MongoObject) newInstance();
-			setObject(obj, newobj);
-		} else {
-			setObject(obj, null);
-		}
+		setObject(obj, null);
 	}
 
 	public void set(Object obj, DBRef value) {

@@ -99,6 +99,9 @@ public class MongoObject {
 	}
 
 	public static <T extends MongoObject> T fromObject(Class<T> clazz, Object obj) throws MongoException {
+		if (obj == null) {
+			return null;
+		}
 		try {
 			T ret = clazz.newInstance();
 			ret.fromObject(obj);
@@ -232,9 +235,14 @@ public class MongoObject {
 		}
 	}
 
+	private static String[] equalExceptField = {
+		"cacheMappedClass",
+		"isFetched",
+		"isRef",
+	};
 	@Override
 	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
+		return EqualsBuilder.reflectionEquals(this, obj, equalExceptField);
 	}
 
 	@Override
