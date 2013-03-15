@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.tsaikd.java.mongodb.annotations.Entity;
 import org.tsaikd.java.mongodb.annotations.IndexEntity;
 import org.tsaikd.java.mongodb.annotations.IndexField;
+import org.tsaikd.java.mongodb.annotations.MongoField;
 import org.tsaikd.java.mongodb.annotations.Transient;
 
 import com.mongodb.BasicDBObject;
@@ -89,20 +90,22 @@ public class MappedClass {
 		ArrayList<MappedField> fields = new ArrayList<MappedField>();
 		while ((clazz != null) && (clazz != Object.class) && (clazz != MongoObject.class)) {
 			for (Field field : clazz.getDeclaredFields()) {
-				if (Modifier.isStatic(field.getModifiers())) {
-					continue;
-				}
-				if (field.isAnnotationPresent(Transient.class)) {
-					continue;
-				}
-				if (Modifier.isPrivate(field.getModifiers())) {
-					continue;
-				}
-				if (Modifier.isProtected(field.getModifiers())) {
-					continue;
-				}
-				if (field.getName().startsWith("this$")) {
-					continue;
+				if (!field.isAnnotationPresent(MongoField.class)) {
+					if (Modifier.isStatic(field.getModifiers())) {
+						continue;
+					}
+					if (field.isAnnotationPresent(Transient.class)) {
+						continue;
+					}
+					if (Modifier.isPrivate(field.getModifiers())) {
+						continue;
+					}
+					if (Modifier.isProtected(field.getModifiers())) {
+						continue;
+					}
+					if (field.getName().startsWith("this$")) {
+						continue;
+					}
 				}
 				fields.add(new MappedField(field));
 			}
