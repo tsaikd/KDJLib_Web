@@ -254,6 +254,12 @@ public class ServletUtils {
 			return;
 		}
 
+		if (res.getStatus() >= 400) {
+			// etag no need in error
+			chain.doFilter(req, res);
+			return;
+		}
+
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		EtagHttpResponseWrapper ehrw = new EtagHttpResponseWrapper(res, baos);
 
