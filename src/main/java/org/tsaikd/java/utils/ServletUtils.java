@@ -248,18 +248,6 @@ public class ServletUtils {
 	}
 
 	public static void etagFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
-		if (res.getHeader("ETag") != null) {
-			// etag already set
-			chain.doFilter(req, res);
-			return;
-		}
-
-		if (res.getStatus() >= 400) {
-			// etag no need in error
-			chain.doFilter(req, res);
-			return;
-		}
-
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		EtagHttpResponseWrapper ehrw = new EtagHttpResponseWrapper(res, baos);
 
@@ -268,8 +256,12 @@ public class ServletUtils {
 
 		ehrw.flushBuffer();
 
-		if (ServletUtils.checkEtagIsCached(req, ehrw, ehrw.getEtag())) {
-			return;
+		if (ehrw.getHeader("ETag") == null	// etag already set
+				&& ehrw.getStatus() >= 200	// etag no need in error
+				&& ehrw.getStatus() < 400) {
+			if (ServletUtils.checkEtagIsCached(req, ehrw, ehrw.getEtag())) {
+				return;
+			}
 		}
 
 		ehrw.setContentLength(baos.size());
