@@ -63,7 +63,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 			try {
 				log.debug("Create WebService Client for " + wsdlUrl);
 				HttpGet method = new HttpGet(wsdlUrl);
-				HttpClient httpClient = new ConfigHttpClient(noProxy);
+				HttpClient httpClient = WebClient.newHttpClient(null, noProxy);
 				HttpResponse httpRes = httpClient.execute(method);
 				if (httpRes.getStatusLine().getStatusCode() >= 400) {
 					throw new RuntimeException(httpRes.getStatusLine().getReasonPhrase());
@@ -86,7 +86,7 @@ public class DynamicWebServiceClient implements InvocationHandler {
 				wsClient = new RPCServiceClient();
 				wsClient.setTargetEPR(epr);
 				if (!noProxy) {
-					HttpHost httpProxy = ConfigHttpClient.getDefaultProxy();
+					HttpHost httpProxy = WebClient.getDefaultProxy();
 					if (httpProxy != null) {
 						ProxyProperties proxyProperty = new ProxyProperties();
 						proxyProperty.setProxyName(httpProxy.getHostName());
