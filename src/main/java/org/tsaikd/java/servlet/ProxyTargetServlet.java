@@ -18,12 +18,21 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.tsaikd.java.utils.ConfigUtils;
 
 /**
- * <p>init servlet param: proxytarget</p>
- *
- * example: <pre>
+ * init servlet param: proxytarget
+ * <p/>
+ * example 1:
+ * <pre>
  * @WebInitParam(name = "proxytarget", value = "http://127.0.0.1:8080/webservice")
+ * </pre>
+ * example 2:
+ * <br/>need to edit config.properties for variable SCHEMA,HOST,PORT
+ * <br/>param replaceconfig value separated by ","
+ * <pre>
+ * @WebInitParam(name = "replaceconfig", value = "SCHEMA,HOST,PORT")
+ * @WebInitParam(name = "proxytarget", value = "SCHEMA://HOST:PORT/webservice")
  * </pre>
  */
 public class ProxyTargetServlet extends HttpServlet {
@@ -33,7 +42,16 @@ public class ProxyTargetServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+		String replaceconfig = getInitParameter("replaceconfig");
 		String urlString = getInitParameter("proxytarget");
+
+		if (replaceconfig != null) {
+			for (String confparam : replaceconfig.split(",")) {
+				String confvalue = ConfigUtils.get(confparam);
+				urlString = urlString.replaceAll(confparam, confvalue);
+			}
+		}
+
 		String queryString = req.getQueryString();
 
 		if (queryString != null && !queryString.isEmpty()) {
