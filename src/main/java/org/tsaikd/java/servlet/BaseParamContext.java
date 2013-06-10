@@ -65,6 +65,20 @@ public class BaseParamContext {
 		return value;
 	}
 
+	public static LinkedList<String> getParamSeps(HttpServletRequest req, String sep, String name) {
+		LinkedList<String> list = new LinkedList<>();
+		for (String value : getParams(req, name)) {
+			for (String valsep : value.split(sep)) {
+				list.add(valsep);
+			}
+		}
+		return list;
+	}
+
+	public LinkedList<String> getParamSeps(String sep, String name) {
+		return getParamSeps(req, sep, name);
+	}
+
 	// Integer
 	public static LinkedList<Integer> getParamInts(HttpServletRequest req, String name) {
 		LinkedList<Integer> res = new LinkedList<>();
