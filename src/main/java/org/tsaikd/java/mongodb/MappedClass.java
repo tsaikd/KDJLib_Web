@@ -33,6 +33,18 @@ public class MappedClass {
 
 	private static HashMap<String, MappedClass> mappedClasses2 = new HashMap<>();
 
+	public static MappedClass getMappedClass(Class<?> clazz, DB dbCustom) {
+		if (mappedClasses.containsKey(clazz)) {
+			return mappedClasses.get(clazz);
+		}
+		MappedClass mappedClass = new MappedClass(clazz);
+		mappedClasses.put(clazz, mappedClass);
+		mappedClasses2.put(mappedClass.getEntityName(), mappedClass);
+		mappedClass.setDB(dbCustom);
+		mappedClass.ensureIndex();
+		return mappedClass;
+	}
+
 	public static MappedClass getMappedClass(Class<?> clazz) {
 		if (mappedClasses.containsKey(clazz)) {
 			return mappedClasses.get(clazz);
@@ -40,19 +52,7 @@ public class MappedClass {
 		MappedClass mappedClass = new MappedClass(clazz);
 		mappedClasses.put(clazz, mappedClass);
 		mappedClasses2.put(mappedClass.getEntityName(), mappedClass);
-		if (db != null) {
-			DBCollection col = mappedClass.getCol();
-			for (Entry<BasicDBObject, BasicDBObject> field : mappedClass.indexFields.entrySet()) {
-				if (log.isDebugEnabled()) {
-					if (field.getValue().isEmpty()) {
-						log.debug("ensureIndex " + mappedClass.getEntityName() + ": " + field.getKey());
-					} else {
-						log.debug("ensureIndex " + mappedClass.getEntityName() + ": " + field.getKey() + ", " + field.getValue());
-					}
-				}
-				col.ensureIndex(field.getKey(), field.getValue());
-			}
-		}
+		mappedClass.ensureIndex();
 		return mappedClass;
 	}
 
@@ -197,6 +197,26 @@ public class MappedClass {
 
 	public DBCollection getCol() {
 		return getDB().getCollection(getEntityName());
+	}
+
+	public MappedClass ensureIndex() {
+		DBCollection col;
+		try {
+			col = getCol();
+		} catch (NullPointerException e) {
+			return this;
+		}
+		for (Entry<BasicDBObject, BasicDBObject> field : indexFields.entrySet()) {
+			if (log.isDebugEnabled()) {
+				if (field.getValue().isEmpty()) {
+					log.debug("ensureIndex " + getEntityName() + ": " + field.getKey());
+				} else {
+					log.debug("ensureIndex " + getEntityName() + ": " + field.getKey() + ", " + field.getValue());
+				}
+			}
+			col.ensureIndex(field.getKey(), field.getValue());
+		}
+		return this;
 	}
 
 	public Object newInstance() throws MongoException {
