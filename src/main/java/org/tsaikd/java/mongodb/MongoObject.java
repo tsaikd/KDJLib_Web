@@ -6,6 +6,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.tsaikd.java.servlet.EvalReturn;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
@@ -356,6 +357,10 @@ public class MongoObject {
 			update.put("$set", set);
 		}
 		return setField(update);
+	}
+
+	public EvalReturn eval(String js) {
+		return EvalReturn.fromObject(EvalReturn.class, getDB().eval(js));
 	}
 
 	public static CommandResult mapReduce(Class<? extends MongoObject> clazz, String map, String reduce, DBObject query) throws MongoException {
