@@ -9,7 +9,6 @@ import java.io.ObjectOutputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -18,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.Cookie;
@@ -47,13 +47,19 @@ public class WebClient {
 	}
 
 	static class WebSSLSocketFactory extends SSLSocketFactory {
-		public WebSSLSocketFactory() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
-			super(new TrustStrategy() {
-				@Override
-				public boolean isTrusted(X509Certificate[] arg0, String arg1)
-						throws CertificateException {
-					return true;
-				}}, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		public WebSSLSocketFactory() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+			super(
+				SSLContexts.custom()
+					.loadTrustMaterial(null, null, new TrustStrategy() {
+						@Override
+						public boolean isTrusted(X509Certificate[] arg0, String arg1)
+								throws CertificateException {
+							return true;
+						}
+					})
+					.build(),
+				SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
+			);
 		}
 	}
 
@@ -150,8 +156,7 @@ public class WebClient {
 		// https
 		try {
 			builder.setSSLSocketFactory(new WebSSLSocketFactory());
-		} catch (KeyManagementException | UnrecoverableKeyException
-				| NoSuchAlgorithmException | KeyStoreException e) {
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 			e.printStackTrace();
 		}
 
