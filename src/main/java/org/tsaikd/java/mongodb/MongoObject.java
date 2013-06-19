@@ -19,6 +19,7 @@ import com.mongodb.MapReduceOutput;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
+import com.mongodb.util.ObjectSerializer;
 
 public class MongoObject {
 
@@ -370,6 +371,15 @@ public class MongoObject {
 		MapReduceOutput mrout = col.mapReduce(mrcmd);
 		CommandResult res = mrout.getCommandResult();
 		return res;
+	}
+
+	public static String toMongoShellString(DBObject input) {
+		ObjectSerializer serializer = MongoObjectSerializers.getMongoShell();
+		return serializer.serialize(input);
+	}
+
+	public String toMongoShellString() {
+		return toMongoShellString(toDBObject());
 	}
 
 }
