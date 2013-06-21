@@ -29,9 +29,9 @@ public class MappedClass {
 
 	public static ArrayList<String> searchPackage = new ArrayList<>();
 
-	private static HashMap<Class<?>, MappedClass> mappedClasses = new HashMap<>();
+	protected static HashMap<Class<?>, MappedClass> mappedClasses = new HashMap<>();
 
-	private static HashMap<String, MappedClass> mappedClasses2 = new HashMap<>();
+	protected static HashMap<String, MappedClass> mappedClasses2 = new HashMap<>();
 
 	public static MappedClass getMappedClass(Class<?> clazz, DB dbCustom) {
 		if (mappedClasses.containsKey(clazz)) {
@@ -72,7 +72,7 @@ public class MappedClass {
 		return mappedClasses.containsKey(clazz);
 	}
 
-	private static Class<?> searchClass(String name) {
+	protected static Class<?> searchClass(String name) {
 		try {
 			return Class.forName(name);
 		} catch (ClassNotFoundException e) {
@@ -86,7 +86,7 @@ public class MappedClass {
 		return null;
 	}
 
-	private static ArrayList<MappedField> getDeclaredAndInheritedFields(Class<?> clazz) {
+	protected static ArrayList<MappedField> getDeclaredAndInheritedFields(Class<?> clazz, Object defClass) {
 		ArrayList<MappedField> fields = new ArrayList<MappedField>();
 		while ((clazz != null) && (clazz != Object.class) && (clazz != MongoObject.class)) {
 			for (Field field : clazz.getDeclaredFields()) {
@@ -107,7 +107,11 @@ public class MappedClass {
 						continue;
 					}
 				}
-				fields.add(new MappedField(field));
+				try {
+					fields.add(new MappedField(field, field.get(defClass)));
+				} catch (IllegalAccessException e) {
+					throw new MongoException(e.getMessage());
+				}
 			}
 			clazz = clazz.getSuperclass();
 		}
@@ -121,9 +125,9 @@ public class MappedClass {
 	// field, option
 	public LinkedHashMap<BasicDBObject, BasicDBObject> indexFields = new LinkedHashMap<>();
 
-	private DB dbCustom = null;
+	protected DB dbCustom = null;
 
-	private Class<?> clazz;
+	protected Class<?> clazz;
 
 	MappedClass(Class<?> clazz) throws MongoException {
 		this.clazz = clazz;
@@ -144,7 +148,8 @@ public class MappedClass {
 				indexFields.put(fieldobj, optionobj);
 			}
 		}
-		ArrayList<MappedField> fields = getDeclaredAndInheritedFields(clazz);
+		Object defClass = newInstance();
+		ArrayList<MappedField> fields = getDeclaredAndInheritedFields(clazz, defClass);
 		for (MappedField field : fields) {
 			if (field.isId) {
 				if (idField != null) {
@@ -169,7 +174,7 @@ public class MappedClass {
 		return null;
 	}
 
-	private String cacheEntityName;
+	protected String cacheEntityName;
 	public String getEntityName() {
 		if (cacheEntityName == null) {
 			Entity anno = clazz.getAnnotation(Entity.class);

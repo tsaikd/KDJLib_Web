@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.tsaikd.java.mongodb.annotations.DefValue;
 import org.tsaikd.java.mongodb.annotations.Id;
 import org.tsaikd.java.mongodb.annotations.Reference;
 
@@ -49,8 +48,9 @@ public class MappedField {
 
 	public Object defValue = null;
 
-	MappedField(Field field) throws MongoException {
+	MappedField(Field field, Object defValue) throws MongoException {
 		this.field = field;
+		this.defValue = defValue;
 		Class<?> type = field.getType();
 
 		isId = field.isAnnotationPresent(Id.class);
@@ -60,63 +60,20 @@ public class MappedField {
 		String typename = type.getName();
 		if (typename.equals("int")) {
 			isNativeType = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = (int) 0;
-			} else {
-				defValue = decDefValue.valueInt();
-			}
 		} else if (typename.equals("long")) {
 			isNativeType = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = (long) 0;
-			} else {
-				defValue = decDefValue.valueLong();
-			}
 		} else if (typename.equals("double")) {
 			isNativeType = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = (double) 0;
-			} else {
-				defValue = decDefValue.valueDouble();
-			}
 		} else if (typename.equals("java.lang.Integer")) {
 			isNativeClass = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = new Integer(0);
-			} else {
-				defValue = decDefValue.valueInt();
-			}
 		} else if (typename.equals("java.lang.Long")) {
 			isNativeClass = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = new Long(0);
-			} else {
-				defValue = decDefValue.valueLong();
-			}
 		} else if (typename.equals("java.lang.Double")) {
 			isNativeClass = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = new Double(0);
-			} else {
-				defValue = decDefValue.valueDouble();
-			}
 		} else if (typename.equals("java.lang.Boolean")) {
 			isNativeClass = true;
-			DefValue decDefValue = field.getAnnotation(DefValue.class);
-			if (decDefValue == null) {
-				defValue = false;
-			} else {
-				defValue = decDefValue.valueBoolean();
-			}
 		} else if (typename.equals("java.lang.String")) {
 			isNativeClass = true;
-			defValue = "";
 		} else if (typename.equals("java.util.regex.Pattern")) {
 			isNativeClass = true;
 		} else if (type.isEnum()) {
@@ -308,10 +265,8 @@ public class MappedField {
 					field.set(obj, newInstance());
 					return;
 				}
-				if (isNativeType) {
-					field.set(obj, defValue);
-					return;
-				}
+				field.set(obj, defValue);
+				return;
 			} else {
 				if (isNativeClass) {
 					String typename = field.getType().getName();
