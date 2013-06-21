@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bson.types.ObjectId;
 import org.tsaikd.java.mongodb.annotations.Id;
 import org.tsaikd.java.mongodb.annotations.Reference;
 
@@ -46,6 +47,8 @@ public class MappedField {
 
 	public boolean isDBObject = false;
 
+	public boolean isObjectId = false;
+
 	public Object defValue = null;
 
 	MappedField(Field field, Object defValue) throws MongoException {
@@ -76,6 +79,8 @@ public class MappedField {
 			isNativeClass = true;
 		} else if (typename.equals("java.util.regex.Pattern")) {
 			isNativeClass = true;
+		} else if (typename.equals("org.bson.types.ObjectId")) {
+			isObjectId = true;
 		} else if (type.isEnum()) {
 			isEnum = true;
 		} else if (isInterface) {
@@ -281,9 +286,15 @@ public class MappedField {
 						}
 					}
 				}
-				if (isEnum && value instanceof String) {
-					field.set(obj, Enum.valueOf((Class<? extends Enum>) field.getType(), (String) value));
-					return;
+				if (value instanceof String) {
+					if (isEnum) {
+						field.set(obj, Enum.valueOf((Class<? extends Enum>) field.getType(), (String) value));
+						return;
+					}
+					if (isObjectId) {
+						field.set(obj, ObjectId.massageToObjectId(value));
+						return;
+					}
 				}
 			}
 			field.set(obj, value);
