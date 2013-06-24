@@ -108,9 +108,13 @@ public class MappedClass {
 					}
 				}
 				try {
-					fields.add(new MappedField(field, field.get(defClass)));
-				} catch (IllegalAccessException e) {
-					throw new MongoException(e.getMessage());
+					if (defClass == null) {
+						fields.add(new MappedField(field, null));
+					} else {
+						fields.add(new MappedField(field, field.get(defClass)));
+					}
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					log.debug(e.getMessage());
 				}
 			}
 			clazz = clazz.getSuperclass();
@@ -148,7 +152,15 @@ public class MappedClass {
 				indexFields.put(fieldobj, optionobj);
 			}
 		}
-		Object defClass = newInstance();
+
+		// try to get default value
+		Object defClass = null;
+		try {
+			defClass = clazz.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			log.debug(e.getMessage());
+		}
+
 		ArrayList<MappedField> fields = getDeclaredAndInheritedFields(clazz, defClass);
 		for (MappedField field : fields) {
 			if (field.isId) {
