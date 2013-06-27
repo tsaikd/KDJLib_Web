@@ -9,9 +9,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 public @interface IndexField {
 
-	public String name();
+	public String[] name();
 
-	public int direction() default 1;
+	public int[] direction() default {1};
 
 	public IndexFieldOption option() default @IndexFieldOption;
 

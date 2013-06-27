@@ -138,7 +138,14 @@ public class MappedClass {
 		IndexEntity annoIndex = getAnnotation(IndexEntity.class);
 		if (annoIndex != null) {
 			for (IndexField indexField : annoIndex.fields()) {
-				BasicDBObject fieldobj = new BasicDBObject(indexField.name(), indexField.direction());
+				BasicDBObject fieldobj = new BasicDBObject();
+				String[] names = indexField.name();
+				int[] directions = indexField.direction();
+				for (int i=0 ; i<names.length ; i++) {
+					String name = names[i];
+					int direction = (i < directions.length) ? directions[i] : directions[0];
+					fieldobj.append(name, direction);
+				}
 				BasicDBObject optionobj = new BasicDBObject();
 				if (indexField.option().unique()) {
 					optionobj.put("unique", true);
