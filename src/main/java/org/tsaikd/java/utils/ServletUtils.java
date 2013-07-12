@@ -1,24 +1,16 @@
 package org.tsaikd.java.utils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.zip.CRC32;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.jsp.JspWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.tsaikd.java.filter.io.ByteServletOutputStream;
 
 public class ServletUtils {
 
@@ -189,71 +181,6 @@ public class ServletUtils {
 		// if the model has modified, setup the new modified date
 		res.setStatus(HttpServletResponse.SC_OK);
 		return false;
-	}
-
-	private static class EtagHttpResponseWrapper extends HttpServletResponseWrapper {
-
-		private ByteArrayOutputStream baos;
-		private ByteServletOutputStream bsos;
-		private PrintWriter printWriter;
-
-		public EtagHttpResponseWrapper(HttpServletResponse response, ByteArrayOutputStream baos) {
-			super(response);
-			this.baos = baos;
-			bsos = new ByteServletOutputStream(baos);
-		}
-
-		@Override
-		public ServletOutputStream getOutputStream() {
-			return bsos;
-		}
-
-		@Override
-		public PrintWriter getWriter() {
-			if (printWriter == null) {
-				printWriter = new PrintWriter(bsos);
-			}
-			return printWriter;
-		}
-
-		@Override
-		public void flushBuffer() throws IOException {
-			bsos.flush();
-			if (printWriter != null) {
-				printWriter.flush();
-			}
-		}
-
-		public String getEtag() {
-			byte[] data = baos.toByteArray();
-			CRC32 crc32 = new CRC32();
-			crc32.update(data);
-			return String.valueOf(crc32.getValue());
-		}
-
-	}
-
-	public static void etagFilter(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		EtagHttpResponseWrapper ehrw = new EtagHttpResponseWrapper(res, baos);
-
-		// pass the request/response on
-		chain.doFilter(req, ehrw);
-
-		ehrw.flushBuffer();
-
-		if (ehrw.getHeader("ETag") == null	// etag already set
-				&& ehrw.getStatus() >= 200	// etag no need in error
-				&& ehrw.getStatus() < 400) {
-			if (ServletUtils.checkEtagIsCached(req, ehrw, ehrw.getEtag())) {
-				return;
-			}
-		}
-
-		ehrw.setContentLength(baos.size());
-		ServletOutputStream sos = res.getOutputStream();
-		sos.write(baos.toByteArray());
-		sos.close();
 	}
 
 }
