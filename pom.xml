@@ -26,6 +26,7 @@
 		<dependency>
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
+			<version>LATEST</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>ant</artifactId>
@@ -48,10 +49,12 @@
 		<dependency>
 			<groupId>com.yahoo.platform.yui</groupId>
 			<artifactId>yuicompressor</artifactId>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.htmlcompressor</groupId>
 			<artifactId>htmlcompressor</artifactId>
+			<version>LATEST</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>

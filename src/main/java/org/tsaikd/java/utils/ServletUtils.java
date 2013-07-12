@@ -18,6 +18,7 @@ import javax.servlet.jsp.JspWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.tsaikd.java.filter.io.ByteServletOutputStream;
 
 public class ServletUtils {
 
@@ -188,21 +189,6 @@ public class ServletUtils {
 		// if the model has modified, setup the new modified date
 		res.setStatus(HttpServletResponse.SC_OK);
 		return false;
-	}
-
-	private static class ByteServletOutputStream extends ServletOutputStream {
-
-		private ByteArrayOutputStream baos;
-
-		public ByteServletOutputStream(ByteArrayOutputStream baos) {
-			this.baos = baos;
-		}
-
-		@Override
-		public void write(int b) throws IOException {
-			baos.write(b);
-		}
-
 	}
 
 	private static class EtagHttpResponseWrapper extends HttpServletResponseWrapper {
