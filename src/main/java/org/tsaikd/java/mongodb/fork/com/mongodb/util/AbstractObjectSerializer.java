@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package org.tsaikd.java.mongodb.fork;
+package org.tsaikd.java.mongodb.fork.com.mongodb.util;
 
 import com.mongodb.util.ObjectSerializer;
 

@@ -8,8 +8,8 @@ import java.util.SimpleTimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.ObjectId;
-import org.tsaikd.java.mongodb.fork.ClassMapBasedObjectSerializer;
-import org.tsaikd.java.mongodb.fork.JSONSerializers;
+import org.tsaikd.java.mongodb.fork.com.mongodb.util.ClassMapBasedObjectSerializer;
+import org.tsaikd.java.mongodb.fork.com.mongodb.util.JSONSerializers;
 
 import com.mongodb.util.ObjectSerializer;
 
