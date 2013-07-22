@@ -2,7 +2,6 @@ package org.tsaikd.java.servlet;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -16,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.tsaikd.java.utils.ConfigUtils;
@@ -97,15 +97,12 @@ public class ProxyTargetServlet extends HttpServlet {
 		BufferedInputStream webToProxyBuf;
 		try {
 			webToProxyBuf = new BufferedInputStream(conn.getInputStream());
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			webToProxyBuf = new BufferedInputStream(conn.getErrorStream());
 		}
 		BufferedOutputStream proxyToClientBuf = new BufferedOutputStream(res.getOutputStream());
 
-		int oneByte;
-		while ((oneByte = webToProxyBuf.read()) != -1) {
-			proxyToClientBuf.write(oneByte);
-		}
+		IOUtils.copy(webToProxyBuf, proxyToClientBuf);
 		proxyToClientBuf.flush();
 		proxyToClientBuf.close();
 
