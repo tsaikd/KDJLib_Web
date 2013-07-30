@@ -227,7 +227,7 @@ class JSONParser {
 
         read('{');
         @SuppressWarnings("unused")
-		char current = get();
+        char current = get();
         while(get() != '}') {
             String key = parseString(false);
             read(':');
@@ -423,7 +423,7 @@ class JSONParser {
     public Number parseNumber() {
 
         @SuppressWarnings("unused")
-		char current = get();
+        char current = get();
         int start = this.pos;
         boolean isDouble = false;
 
