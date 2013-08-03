@@ -3,30 +3,30 @@
 	<parent>
 		<groupId>org.tsaikd.java</groupId>
 		<artifactId>KDJLib_parent</artifactId>
-		<version>LATEST</version>
+		<version>RELEASE</version>
 	</parent>
 	<artifactId>KDJLib_Web</artifactId>
-	<version>0.0.8-SNAPSHOT</version>
+	<version>0.0.9</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.tsaikd.java</groupId>
 			<artifactId>KDJLib</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>ant</artifactId>
@@ -49,12 +49,12 @@
 		<dependency>
 			<groupId>com.yahoo.platform.yui</groupId>
 			<artifactId>yuicompressor</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.htmlcompressor</groupId>
 			<artifactId>htmlcompressor</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
@@ -67,12 +67,12 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>LATEST</version>
+			<version>RELEASE</version>
 		</dependency>
 	</dependencies>
 </project>
