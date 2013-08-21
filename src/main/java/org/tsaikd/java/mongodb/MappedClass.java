@@ -34,12 +34,12 @@ public class MappedClass {
 	protected static HashMap<String, MappedClass> mappedClasses2 = new HashMap<>();
 
 	public static MappedClass getMappedClass(Class<?> clazz, DB dbCustom) {
-		if (mappedClasses.containsKey(clazz)) {
-			return mappedClasses.get(clazz);
+		MappedClass mappedClass = mappedClasses.get(clazz);
+		if (mappedClass == null) {
+			mappedClass = new MappedClass(clazz);
+			mappedClasses.put(clazz, mappedClass);
+			mappedClasses2.put(mappedClass.getEntityName(), mappedClass);
 		}
-		MappedClass mappedClass = new MappedClass(clazz);
-		mappedClasses.put(clazz, mappedClass);
-		mappedClasses2.put(mappedClass.getEntityName(), mappedClass);
 		mappedClass.setDB(dbCustom);
 		mappedClass.ensureIndex();
 		return mappedClass;
