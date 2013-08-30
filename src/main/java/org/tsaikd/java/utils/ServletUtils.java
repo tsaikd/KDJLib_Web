@@ -3,6 +3,7 @@ package org.tsaikd.java.utils;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +30,19 @@ public class ServletUtils {
 		if (ip == null || ip.trim().isEmpty() || ip.trim().equalsIgnoreCase("unknown")) {
 			ip = req.getRemoteAddr();
 		}
+		if (ip == null || ip.trim().isEmpty() || ip.trim().equalsIgnoreCase("unknown")) {
+			ip = "";
+		}
 		return ip;
+	}
+
+	public static LinkedList<String> getRemoteRealIPs(HttpServletRequest req) {
+		LinkedList<String> ips = new LinkedList<>();
+		String realip = getRemoteRealIP(req);
+		for (String ip : realip.split(",")) {
+			ips.add(ip.trim());
+		}
+		return ips;
 	}
 
 	public static File getRealFile(HttpServletRequest request, String path) {
