@@ -17,14 +17,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 
 public class WebClient {
@@ -46,11 +47,11 @@ public class WebClient {
 		}
 	}
 
-	static class WebSSLSocketFactory extends SSLSocketFactory {
+	static class WebSSLSocketFactory extends SSLConnectionSocketFactory {
 		public WebSSLSocketFactory() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 			super(
 				SSLContexts.custom()
-					.loadTrustMaterial(null, null, new TrustStrategy() {
+					.loadTrustMaterial(null, new TrustStrategy() {
 						@Override
 						public boolean isTrusted(X509Certificate[] arg0, String arg1)
 								throws CertificateException {
@@ -58,7 +59,7 @@ public class WebClient {
 						}
 					})
 					.build(),
-				SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
+				SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
 			);
 		}
 	}
@@ -148,7 +149,7 @@ public class WebClient {
 	}
 
 	public static CloseableHttpClient newHttpClient(File cookieFile, boolean noProxy) {
-		HttpClientBuilder builder = HttpClientBuilder.create();
+		HttpClientBuilder builder = HttpClients.custom();
 
 		// retry
 		builder.setRetryHandler(new WebRetryHandler());
