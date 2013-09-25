@@ -23,7 +23,7 @@ public class JSonOutput extends MongoObject {
 
 	public void write(HttpServletResponse res, boolean sendError) throws IOException {
 		if (status != null) {
-			if (sendError) {
+			if (sendError && (status >= 400)) {
 				if (msg == null) {
 					res.sendError(status);
 				} else {
