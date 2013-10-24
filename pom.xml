@@ -6,7 +6,7 @@
 		<version>RELEASE</version>
 	</parent>
 	<artifactId>KDJLib_Web</artifactId>
-	<version>0.0.14</version>
+	<version>0.0.15</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.tsaikd.java</groupId>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>com.google.javascript</groupId>
 			<artifactId>closure-compiler</artifactId>
-			<version>RELEASE</version>
+			<version>v20130823</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>ant</artifactId>
