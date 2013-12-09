@@ -307,8 +307,12 @@ public class MongoObject {
 	}
 
 	public MongoObject save() {
-		DBCollection col = getCol();
-		col.save(toDBObject(false, false, false));
+		try {
+			DBCollection col = getCol();
+			col.save(toDBObject(false, false, false));
+		} catch (Exception e) {
+			System.out.println("發生錯誤!!" + e);
+		}
 		return this;
 	}
 
