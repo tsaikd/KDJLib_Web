@@ -311,7 +311,9 @@ public class MongoObject {
 			DBCollection col = getCol();
 			col.save(toDBObject(false, false, false));
 		} catch (Exception e) {
-			System.out.println("發生錯誤!!" + e);
+			log.error("cannot save object into DB: " + e);
+			log.info("retry for saving...");
+			save();
 		}
 		return this;
 	}
