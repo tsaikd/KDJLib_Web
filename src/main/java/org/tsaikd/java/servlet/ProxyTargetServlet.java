@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.tsaikd.java.utils.ConfigUtils;
 
 /**
  * init servlet param: proxytarget
@@ -87,10 +86,14 @@ public class ProxyTargetServlet extends HttpServlet {
 
 		int statusCode = conn.getResponseCode();
 		res.setStatus(statusCode);
-		for (Iterator<?> i=conn.getHeaderFields().entrySet().iterator() ; i.hasNext() ; ) {
-			Map.Entry<?, ?> mapEntry = (Map.Entry<?, ?>)i.next();
-			if (mapEntry.getKey() != null) {
-				res.setHeader(mapEntry.getKey().toString(), ((List<?>)mapEntry.getValue()).get(0).toString());
+		for (Iterator<Entry<String, List<String>>> i = conn.getHeaderFields().entrySet().iterator(); i.hasNext();) {
+			Entry<String, List<String>> mapEntry = i.next();
+			String key = mapEntry.getKey();
+			if (key != null && !key.equalsIgnoreCase("Transfer-Encoding")) {
+				List<String> values = mapEntry.getValue();
+				for (String value : values) {
+					res.addHeader(key, value);
+				}
 			}
 		}
 
