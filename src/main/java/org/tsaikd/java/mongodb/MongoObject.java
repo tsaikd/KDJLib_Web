@@ -54,21 +54,8 @@ public class MongoObject {
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, DBObject o) {
-		DBObject obj = null;
-		try {
-			MappedClass mc = MappedClass.getMappedClass(clazz);
-			obj = mc.getCol().findOne(o);
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.error("find DB object error, retrying for " + o);
-			try {
-				Thread.sleep(4000);
-			} catch (InterruptedException se) {
-				se.printStackTrace();
-			}
-			findOneDBObj(clazz, o);
-		}
-		return obj;
+		MappedClass mc = MappedClass.getMappedClass(clazz);
+		return mc.getCol().findOne(o);
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, DBObject o, DBObject fields) {
@@ -320,19 +307,8 @@ public class MongoObject {
 	}
 
 	public MongoObject save() {
-		try {
-			DBCollection col = getCol();
-			col.save(toDBObject(false, false, false));
-		} catch (Exception e) {
-			log.error("cannot save object into DB: " + e);
-			log.info("retry for saving...");
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException se) {
-				se.printStackTrace();
-			}
-			save();
-		}
+		DBCollection col = getCol();
+		col.save(toDBObject(false, false, false));
 		return this;
 	}
 
