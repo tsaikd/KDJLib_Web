@@ -1,35 +1,27 @@
-diff --git b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/AbstractObjectSerializer.java a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/AbstractObjectSerializer.java
-index 16c6762..24a0ea1 100644
---- b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/AbstractObjectSerializer.java
-+++ a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/AbstractObjectSerializer.java
-@@ -14,9 +14,11 @@
- * limitations under the License.
- */
+diff --git a/src/main/com/mongodb/util/AbstractObjectSerializer.java b/src/main/com/mongodb/util/AbstractObjectSerializer.java
+index b524e0e..4f043cc 100644
+--- a/src/main/com/mongodb/util/AbstractObjectSerializer.java
++++ b/src/main/com/mongodb/util/AbstractObjectSerializer.java
+@@ -16,6 +16,8 @@
  
--package com.mongodb.util;
-+package org.tsaikd.java.mongodb.fork.com.mongodb.util;
+ package com.mongodb.util;
  
--abstract class AbstractObjectSerializer implements ObjectSerializer {
 +import com.mongodb.util.ObjectSerializer;
 +
-+public abstract class AbstractObjectSerializer implements ObjectSerializer {
+ abstract class AbstractObjectSerializer implements ObjectSerializer {
  
      @Override
-     public String serialize(final Object obj) {
-diff --git b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/ClassMapBasedObjectSerializer.java a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/ClassMapBasedObjectSerializer.java
-index 7721473..a2e5bd4 100644
---- b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/ClassMapBasedObjectSerializer.java
-+++ a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/ClassMapBasedObjectSerializer.java
-@@ -15,12 +15,14 @@
-  *   limitations under the License.
-  */
+diff --git a/src/main/com/mongodb/util/ClassMapBasedObjectSerializer.java b/src/main/com/mongodb/util/ClassMapBasedObjectSerializer.java
+index ce9f176..788bd6b 100644
+--- a/src/main/com/mongodb/util/ClassMapBasedObjectSerializer.java
++++ b/src/main/com/mongodb/util/ClassMapBasedObjectSerializer.java
+@@ -17,10 +17,12 @@
  
--package com.mongodb.util;
-+package org.tsaikd.java.mongodb.fork.com.mongodb.util;
-+
-+import java.util.List;
+ package com.mongodb.util;
  
 -import com.mongodb.Bytes;
++import java.util.List;
++
  import org.bson.util.ClassMap;
  
 -import java.util.List;
@@ -56,71 +48,73 @@ index 7721473..a2e5bd4 100644
          _serializers.put(c , serializer);
      }
      
-diff --git b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSON.java a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSON.java
-index a1ebea6..0a3e58f 100644
---- b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSON.java
-+++ a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSON.java
-@@ -16,11 +16,13 @@
-  *   limitations under the License.
-  */
+diff --git a/src/main/com/mongodb/util/JSON.java b/src/main/com/mongodb/util/JSON.java
+index ef548a0..19feb07 100644
+--- a/src/main/com/mongodb/util/JSON.java
++++ b/src/main/com/mongodb/util/JSON.java
+@@ -18,9 +18,12 @@
  
--package com.mongodb.util;
-+package org.tsaikd.java.mongodb.fork.com.mongodb.util;
+ package com.mongodb.util;
  
+-import com.mongodb.DBObject;
  import org.bson.BSONCallback;
  
- import com.mongodb.DBObject;
++import com.mongodb.DBObject;
 +import com.mongodb.util.JSONCallback;
 +import com.mongodb.util.JSONParseException;
- 
++
  /**
   *   Helper methods for JSON serialization and de-serialization
-@@ -224,7 +226,8 @@ class JSONParser {
+  */
+@@ -234,14 +237,13 @@ class JSONParser {
  	}
  
          read('{');
 -        char current = get();
-+        @SuppressWarnings("unused")
-+        char current = get();
          while(get() != '}') {
              String key = parseString(false);
              read(':');
-@@ -419,7 +422,8 @@ class JSONParser {
+             Object value = parse(key);
+ 	    doCallback(key, value);
+ 
+-            if((current = get()) == ',') {
++            if(get() == ',') {
+                 read(',');
+             }
+             else {
+@@ -425,7 +427,6 @@ class JSONParser {
       */
      public Number parseNumber() {
  
 -        char current = get();
-+        @SuppressWarnings("unused")
-+        char current = get();
          int start = this.pos;
          boolean isDouble = false;
  
-diff --git b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSONSerializers.java a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSONSerializers.java
-index 8e632b5..4deb066 100644
---- b/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSONSerializers.java
-+++ a/src/main/java/org/tsaikd/java/mongodb/fork/com/mongodb/util/JSONSerializers.java
-@@ -14,27 +14,40 @@
-  *   limitations under the License.
-  */
+diff --git a/src/main/com/mongodb/util/JSONSerializers.java b/src/main/com/mongodb/util/JSONSerializers.java
+index dacb4c6..5167393 100644
+--- a/src/main/com/mongodb/util/JSONSerializers.java
++++ b/src/main/com/mongodb/util/JSONSerializers.java
+@@ -16,18 +16,6 @@
  
--package com.mongodb.util;
--
+ package com.mongodb.util;
+ 
 -import com.mongodb.BasicDBObject;
 -import com.mongodb.Bytes;
 -import com.mongodb.DBObject;
 -import com.mongodb.DBRefBase;
--import org.bson.types.*;
-+package org.tsaikd.java.mongodb.fork.com.mongodb.util;
- 
+-import org.bson.types.BSONTimestamp;
+-import org.bson.types.Binary;
+-import org.bson.types.Code;
+-import org.bson.types.CodeWScope;
+-import org.bson.types.MaxKey;
+-import org.bson.types.MinKey;
+-import org.bson.types.ObjectId;
+-
  import java.lang.reflect.Array;
  import java.text.SimpleDateFormat;
--import java.util.*;
-+import java.util.Date;
-+import java.util.GregorianCalendar;
-+import java.util.Map;
- import java.util.Map.Entry;
-+import java.util.SimpleTimeZone;
-+import java.util.UUID;
+ import java.util.Date;
+@@ -38,12 +26,26 @@ import java.util.SimpleTimeZone;
+ import java.util.UUID;
  import java.util.regex.Pattern;
  
 +import org.bson.types.BSONTimestamp;
@@ -135,12 +129,10 @@ index 8e632b5..4deb066 100644
 +import com.mongodb.Bytes;
 +import com.mongodb.DBObject;
 +import com.mongodb.DBRefBase;
-+import com.mongodb.util.Base64Codec;
 +import com.mongodb.util.ObjectSerializer;
 +
  /**
-  * Defines static methods for getting <code>ObjectSerializer</code> instances that produce various flavors of
-  * JSON.
+  * Defines static methods for getting {@code ObjectSerializer} instances that produce various flavors of JSON.
   */
  public class JSONSerializers {
  
@@ -149,7 +141,7 @@ index 8e632b5..4deb066 100644
      }
  
      /**
-@@ -96,10 +109,10 @@ public class JSONSerializers {
+@@ -106,10 +108,10 @@ public class JSONSerializers {
          return serializer;
      }
  
@@ -162,7 +154,7 @@ index 8e632b5..4deb066 100644
              this.serializer = serializer;
          }
      }
-@@ -271,7 +284,7 @@ public class JSONSerializers {
+@@ -281,7 +283,7 @@ public class JSONSerializers {
              boolean first = true;
              buf.append("[ ");
  
@@ -171,7 +163,7 @@ index 8e632b5..4deb066 100644
                  if (first)
                      first = false;
                  else
-@@ -293,11 +306,11 @@ public class JSONSerializers {
+@@ -303,11 +305,11 @@ public class JSONSerializers {
          public void serialize(Object obj, StringBuilder buf) {
              boolean first = true;
              buf.append("{ ");
@@ -186,12 +178,16 @@ index 8e632b5..4deb066 100644
                  if (first)
                      first = false;
                  else
-@@ -340,7 +353,7 @@ public class JSONSerializers {
- 
-     }
- 
--    private static class ObjectIdSerializer extends CompoundObjectSerializer {
-+    public static class ObjectIdSerializer extends CompoundObjectSerializer {
- 
-         ObjectIdSerializer(ObjectSerializer serializer) {
+@@ -442,10 +444,11 @@ public class JSONSerializers {
              super(serializer);
+         }
+ 
++        @SuppressWarnings("deprecation")
+ 		protected void serialize(byte[] bytes, byte type, StringBuilder buf) {
+             DBObject temp = new BasicDBObject();
+             temp.put("$binary",
+-                    (new Base64Codec()).encode(bytes));
++                    (new com.mongodb.util.Base64Codec()).encode(bytes));
+             temp.put("$type", type);
+             serializer.serialize(temp, buf);
+         }

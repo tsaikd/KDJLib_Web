@@ -1,20 +1,20 @@
-// JSON.java
-
-/**
- *      Copyright (C) 2008 10gen Inc.
+/*
+ * Copyright (c) 2008-2014 MongoDB, Inc.
  *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+// JSON.java
 
 package org.tsaikd.java.mongodb.fork.com.mongodb.util;
 
@@ -30,49 +30,62 @@ import com.mongodb.util.JSONParseException;
 public class JSON {
 
     /**
-     *  Serializes an object into its JSON form.
-     *  <p>
-     *  This method delegates serialization to <code>JSONSerializers.getLegacy</code>
+     * <p>Serializes an object into its JSON form.</p>
      *
-     * @param o object to serialize
-     * @return  String containing JSON form of the object
-     * @see com.mongodb.util.JSONSerializers#getLegacy()
+     * <p>This method delegates serialization to {@code JSONSerializers.getLegacy}</p>
+     *
+     * @param object object to serialize
+     * @return String containing JSON form of the object
+     * @see JSONSerializers#getLegacy()
      */
-    public static String serialize( Object o ){
+    public static String serialize(final Object object) {
         StringBuilder buf = new StringBuilder();
-        serialize( o , buf );
+        serialize( object , buf );
         return buf.toString();
     }
 
     /**
-     *  Serializes an object into its JSON form.
-     *  <p>
-     *  This method delegates serialization to <code>JSONSerializers.getLegacy</code>
+     * <p>Serializes an object into its JSON form.</p>
      *
-     * @param o object to serialize
+     * <p>This method delegates serialization to {@code JSONSerializers.getLegacy}</p>
+     *
+     * @param object   object to serialize
      * @param buf StringBuilder containing the JSON representation under construction 
-     * @return String containing JSON form of the object
-     * @see com.mongodb.util.JSONSerializers#getLegacy()
+     * @see JSONSerializers#getLegacy()
      */
-    public static void serialize( Object o, StringBuilder buf) {
-        JSONSerializers.getLegacy().serialize(o, buf);
+    public static void serialize(final Object object, final StringBuilder buf) {
+        JSONSerializers.getLegacy().serialize(object, buf);
     }
 
     /**
-     *  Parses a JSON string representing a JSON value
+     * <p>Parses a JSON string and returns a corresponding Java object. The returned value is either a {@link com.mongodb.DBObject DBObject}
+     * (if the string is a JSON object or array), or a boxed primitive value according to the following mapping:</p>
+     * <ul>
+     *     <li>{@code java.lang.Boolean} for {@code true} or {@code false}</li>
+     *     <li>{@code java.lang.Integer} for integers between Integer.MIN_VALUE and Integer.MAX_VALUE</li>
+     *     <li>{@code java.lang.Long} for integers outside of this range</li>
+     *     <li>{@code java.lang.Double} for floating point numbers</li>
+     * </ul>
+     * If the parameter is a string that contains a single-quoted or double-quoted string, it is returned as an unquoted {@code
+     * java.lang.String}. Parses a JSON string representing a JSON value
      *
-     * @param s the string to parse
-     * @return the object
+     * @param jsonString the string to parse
+     * @return a Java object representing the JSON data
+     * @throws JSONParseException if jsonString is not valid JSON
      */
-    public static Object parse( String s ){
-	return parse(s, null);
+    public static Object parse(final String jsonString) {
+        return parse(jsonString, null);
     }
 
     /**
-     * Parses a JSON string representing a JSON value
-     *
+     * Parses a JSON string and constructs a corresponding Java object by calling the methods of a {@link org.bson.BSONCallback
+     * BSONCallback} during parsing. If the callback {@code c} is null, this method is equivalent to {@link JSON#parse(String)
+     * parse(String)}.
+     * 
      * @param s the string to parse
-     * @return the object
+     * @param c the BSONCallback to call during parsing
+     * @return a Java object representing the JSON data
+     * @throws JSONParseException if s is not valid JSON 
      */
     public static Object parse( String s, BSONCallback c ){
         if (s == null || (s=s.trim()).equals("")) {
@@ -108,12 +121,10 @@ public class JSON {
     }
 }
 
-
 /**
- * Parser for JSON objects.
+ * <p>Parser for JSON objects.</p>
  *
- * Supports all types described at www.json.org, except for
- * numbers with "e" or "E" in them.
+ * <p>Supports all types described at www.json.org, except for numbers with "e" or "E" in them.</p>
  */
 class JSONParser {
 
@@ -226,15 +237,13 @@ class JSONParser {
 	}
 
         read('{');
-        @SuppressWarnings("unused")
-        char current = get();
         while(get() != '}') {
             String key = parseString(false);
             read(':');
             Object value = parse(key);
 	    doCallback(key, value);
 
-            if((current = get()) == ',') {
+            if(get() == ',') {
                 read(',');
             }
             else {
@@ -263,11 +272,9 @@ class JSONParser {
     }
 
     /**
-     * Read the current character, making sure that it is the expected character.
-     * Advances the pointer to the next character.
+     * Read the current character, making sure that it is the expected character. Advances the pointer to the next character.
      *
      * @param ch the character expected
-     *
      * @throws JSONParseException if the current character does not match the given character
      */
     public void read(char ch) {
@@ -304,7 +311,6 @@ class JSONParser {
      * Checks the current character, making sure that it is the expected character.
      *
      * @param ch the character expected
-     *
      * @throws JSONParseException if the current character does not match the given character
      */
     public boolean check(char ch) {
@@ -321,8 +327,7 @@ class JSONParser {
     }
 
     /**
-     * Returns the current character.
-     * Returns -1 if there are no more characters.
+     * Returns the current character. Returns -1 if there are no more characters.
      *
      * @return the next character
      */
@@ -422,8 +427,6 @@ class JSONParser {
      */
     public Number parseNumber() {
 
-        @SuppressWarnings("unused")
-        char current = get();
         int start = this.pos;
         boolean isDouble = false;
 
