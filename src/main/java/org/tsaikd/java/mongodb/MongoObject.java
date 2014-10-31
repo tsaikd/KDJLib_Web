@@ -364,6 +364,7 @@ public class MongoObject {
 		return EvalReturn.fromObject(EvalReturn.class, getDB().eval(js));
 	}
 
+	@Deprecated
 	public static CommandResult mapReduce(Class<? extends MongoObject> clazz, String map, String reduce, DBObject query) throws MongoException {
 		MappedClass mc = MappedClass.getMappedClass(clazz);
 		DBCollection col = mc.getCol();

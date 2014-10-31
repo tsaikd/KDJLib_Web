@@ -1,17 +1,17 @@
-/**
- *      Copyright (C) 2012 10gen Inc.
- *  
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
+/*
+ * Copyright (c) 2008-2014 MongoDB, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.tsaikd.java.mongodb.fork.com.mongodb.util;
@@ -38,12 +38,10 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.Bytes;
 import com.mongodb.DBObject;
 import com.mongodb.DBRefBase;
-import com.mongodb.util.Base64Codec;
 import com.mongodb.util.ObjectSerializer;
 
 /**
- * Defines static methods for getting <code>ObjectSerializer</code> instances that produce various flavors of
- * JSON.
+ * Defines static methods for getting {@code ObjectSerializer} instances that produce various flavors of JSON.
  */
 public class JSONSerializers {
 
@@ -51,12 +49,12 @@ public class JSONSerializers {
     }
 
     /**
-     * Returns an <code>ObjectSerializer</code> that mostly conforms to the strict JSON format defined in
-     * <a href="http://www.mongodb.org/display/DOCS/Mongo+Extended+JSON", but with a few differences to keep
-     * compatibility with previous versions of the driver.  Clients should generally prefer
-     * <code>getStrict</code> in preference to this method.
+     * Returns an {@code ObjectSerializer} that mostly conforms to the strict JSON format defined in 
+     * <a href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">extended JSON</a>, but with a few differences to keep
+     * compatibility with previous versions of the driver.  Clients should generally prefer {@code getStrict} in preference to this method.
      *
      * @return object serializer
+     * @mongodb.driver.manual reference/mongodb-extended-json/ MongoDB Extended JSON
      * @see #getStrict()
      */
     public static ObjectSerializer getLegacy() {
@@ -71,10 +69,11 @@ public class JSONSerializers {
     }
 
     /**
-     * Returns an <code>ObjectSerializer</code> that conforms to the strict JSON format defined in
-     * <a href="http://www.mongodb.org/display/DOCS/Mongo+Extended+JSON".
+     * Returns an {@code ObjectSerializer} that conforms to the strict JSON format defined in 
+     * <a href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">extended JSON</a>.
      *
      * @return object serializer
+     * @mongodb.driver.manual reference/mongodb-extended-json/ MongoDB Extended JSON
      */
     public static ObjectSerializer getStrict() {
 
@@ -353,7 +352,7 @@ public class JSONSerializers {
 
     }
 
-    public static class ObjectIdSerializer extends CompoundObjectSerializer {
+    private static class ObjectIdSerializer extends CompoundObjectSerializer {
 
         ObjectIdSerializer(ObjectSerializer serializer) {
             super(serializer);
@@ -445,10 +444,11 @@ public class JSONSerializers {
             super(serializer);
         }
 
-        protected void serialize(byte[] bytes, byte type, StringBuilder buf) {
+        @SuppressWarnings("deprecation")
+		protected void serialize(byte[] bytes, byte type, StringBuilder buf) {
             DBObject temp = new BasicDBObject();
             temp.put("$binary",
-                    (new Base64Codec()).encode(bytes));
+                    (new com.mongodb.util.Base64Codec()).encode(bytes));
             temp.put("$type", type);
             serializer.serialize(temp, buf);
         }

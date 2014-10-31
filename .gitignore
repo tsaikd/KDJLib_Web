@@ -1,1 +1,9 @@
+/.gradle/
+/.settings/
+/.classpath
+/.project
+
 /target/
+/build/
+/bin/
+/gradle.properties

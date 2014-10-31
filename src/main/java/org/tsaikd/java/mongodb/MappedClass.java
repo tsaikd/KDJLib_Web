@@ -223,6 +223,30 @@ public class MappedClass {
 		return getDB().getCollection(getEntityName());
 	}
 
+	public MappedClass createIndex() {
+		DBCollection col;
+		try {
+			col = getCol();
+		} catch (NullPointerException e) {
+			return this;
+		}
+		for (Entry<BasicDBObject, BasicDBObject> field : indexFields.entrySet()) {
+			if (log.isDebugEnabled()) {
+				if (field.getValue().isEmpty()) {
+					log.debug("ensureIndex " + getEntityName() + ": " + field.getKey());
+				} else {
+					log.debug("ensureIndex " + getEntityName() + ": " + field.getKey() + ", " + field.getValue());
+				}
+			}
+			col.createIndex(field.getKey(), field.getValue());
+		}
+		return this;
+	}
+
+	/**
+	 * @deprecated use {@link MappedClass#createIndex()} instead
+	 */
+	@Deprecated
 	public MappedClass ensureIndex() {
 		DBCollection col;
 		try {
