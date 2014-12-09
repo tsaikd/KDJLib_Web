@@ -41,7 +41,7 @@ public class CompressJsp implements Filter {
 			chrw.flushBuffer();
 
 			String resbody = chrw.compress();
-			res.setContentLength(resbody.length());
+			res.setContentLength(resbody.getBytes("utf-8").length);
 			PrintWriter writer = res.getWriter();
 			writer.write(resbody);
 			writer.close();
