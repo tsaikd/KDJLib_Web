@@ -9,7 +9,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,7 +20,7 @@ import com.googlecode.htmlcompressor.compressor.YuiCssCompressor;
 
 public class HtmlCompressor {
 
-	private static Logger log = Logger.getLogger(HtmlCompressor.class);
+	static Log log = LogFactory.getLog(HtmlCompressor.class);
 	private static ClosureJavaScriptCompressor jsCompressor = new ClosureJavaScriptCompressor();
 	private static YuiCssCompressor cssCompressor = new YuiCssCompressor();
 

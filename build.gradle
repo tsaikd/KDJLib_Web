@@ -24,25 +24,19 @@ dependencies {
 	compile 'org.mongodb:mongo-java-driver:2.12.4'
 	compile 'commons-lang:commons-lang:2.6'
 	compile 'commons-io:commons-io:2.4'
+	compile 'org.apache.httpcomponents:httpcore:4.3.3'
 	compile 'org.apache.httpcomponents:httpclient:4.3.6'
-	compile 'org.slf4j:slf4j-log4j12:1.7.9'
+	compile 'commons-logging:commons-logging:1.2'
 	testCompile 'junit:junit:4.12'
-}
-
-configurations {
-	compile.exclude module: 'args4j'
-	compile.exclude module: 'closure-compiler-externs'
-	compile.exclude module: 'jsr305'
-	compile.exclude module: 'guava'
-	compile.exclude module: 'gson'
-	compile.exclude module: 'protobuf-java'
-	compile.exclude module: 'tomcat-el-api'
-	compile.exclude module: 'slf4j-api'
+	testCompile 'org.hamcrest:hamcrest-core:1.3'
 }
 
 configurations.all {
 	// check for updates every build
 	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+
+	// do not include transitive dependencies
+	transitive = false
 }
 
 test {
