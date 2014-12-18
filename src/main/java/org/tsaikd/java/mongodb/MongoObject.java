@@ -17,6 +17,7 @@ import com.mongodb.DBRef;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
 import com.mongodb.MongoException;
+import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 import com.mongodb.util.ObjectSerializer;
@@ -314,7 +315,11 @@ public class MongoObject {
 
 	public MongoObject insert() throws MongoException {
 		getCol().insert(toDBObject(false, false, false));
-		getDB().getLastError().throwOnError();
+		return this;
+	}
+
+	public MongoObject insert(WriteConcern concern) throws MongoException {
+		getCol().insert(toDBObject(false, false, false), concern);
 		return this;
 	}
 

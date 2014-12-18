@@ -1,10 +1,7 @@
 package org.tsaikd.java.test;
 
-import java.io.File;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.tsaikd.java.utils.HtmlCompressor;
 
 public class JsCompressor {
 

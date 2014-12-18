@@ -292,7 +292,7 @@ public class MappedField {
 						return;
 					}
 					if (isObjectId) {
-						field.set(obj, ObjectId.massageToObjectId(value));
+						field.set(obj, new ObjectId(value.toString()));
 						return;
 					}
 				}

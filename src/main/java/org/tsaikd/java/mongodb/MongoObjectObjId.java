@@ -24,7 +24,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, String id) {
-		return findOneDBObj(clazz, ObjectId.massageToObjectId(id));
+		return findOneDBObj(clazz, new ObjectId(id));
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, ObjectId id, DBObject fields) {
@@ -35,7 +35,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, String id, DBObject fields) {
-		return findOneDBObj(clazz, ObjectId.massageToObjectId(id), fields);
+		return findOneDBObj(clazz, new ObjectId(id), fields);
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, ObjectId id, String... fields) {
@@ -46,7 +46,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObject> DBObject findOneDBObj(Class<T> clazz, String id, String... fields) {
-		return findOneDBObj(clazz, ObjectId.massageToObjectId(id), fields);
+		return findOneDBObj(clazz, new ObjectId(id), fields);
 	}
 
 	public static <T extends MongoObjectObjId> T findOne(Class<T> clazz, ObjectId id) {
@@ -57,7 +57,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObjectObjId> T findOne(Class<T> clazz, String id) {
-		return findOne(clazz, ObjectId.massageToObjectId(id));
+		return findOne(clazz, new ObjectId(id));
 	}
 
 	public static <T extends MongoObjectObjId> T findOne(Class<T> clazz, ObjectId id, DBObject fields) {
@@ -68,7 +68,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObjectObjId> T findOne(Class<T> clazz, String id, DBObject fields) {
-		return findOne(clazz, ObjectId.massageToObjectId(id), fields);
+		return findOne(clazz, new ObjectId(id), fields);
 	}
 
 	public static <T extends MongoObjectObjId> T findOne(Class<T> clazz, ObjectId id, String... fields) {
@@ -79,7 +79,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObjectObjId> T findOne(Class<T> clazz, String id, String... fields) {
-		return findOne(clazz, ObjectId.massageToObjectId(id), fields);
+		return findOne(clazz, new ObjectId(id), fields);
 	}
 
 	public static <T extends MongoObjectObjId> WriteResult remove(Class<T> clazz, ObjectId id) {
@@ -90,7 +90,7 @@ public class MongoObjectObjId extends MongoObject {
 	}
 
 	public static <T extends MongoObjectObjId> WriteResult remove(Class<T> clazz, String id) {
-		return remove(clazz, ObjectId.massageToObjectId(id));
+		return remove(clazz, new ObjectId(id));
 	}
 
 }
