@@ -3,7 +3,7 @@ apply plugin: 'maven'
 apply plugin: 'eclipse'
 
 group = 'org.tsaikd.java'
-version = '0.1.0' + (hasProperty('release') ? "" : "-SNAPSHOT")
+version = '0.1.1' + (hasProperty('release') ? "" : "-SNAPSHOT")
 
 sourceCompatibility = 1.7
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
