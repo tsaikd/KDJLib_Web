@@ -66,6 +66,7 @@ artifacts {
 uploadArchives {
 	repositories {
 		mavenDeployer {
+			pom.artifactId = 'KDJLib_Web'
 			try {
 				repository(url: mavenReleaseUrl) {
 					authentication(userName: mavenDeployUser, password: mavenDeployPass)
